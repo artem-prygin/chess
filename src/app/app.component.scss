@@ -1,0 +1,65 @@
+.board {
+    display: grid;
+    margin: auto;
+    grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr;
+    width: max-content;
+    border: 1px solid black;
+}
+
+.field {
+    height: 80px;
+    width: 80px;
+    border: 1px solid black;
+    -webkit-background-size: cover;
+    background-size: cover;
+
+    &-white {
+        background-color: mintcream;
+    }
+
+    &-black {
+        background-color: darkseagreen;
+    }
+}
+
+.has-figure {
+    cursor: pointer;
+    position: relative;
+
+    &::before {
+        content: '';
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        background: #000;
+        opacity: 0;
+        top: 0;
+        left: 0;
+        transition: opacity .3s;
+    }
+
+    &:hover, &__active {
+        &::before {
+            opacity: .25;
+        }
+    }
+}
+
+.possible-move {
+    position: relative;
+
+    &::after {
+        content: '';
+        position: absolute;
+        width: 20px;
+        height: 20px;
+        -webkit-border-radius: 50%;
+        -moz-border-radius: 50%;
+        border-radius: 50%;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background-color: orangered;
+        z-index: 2;
+    }
+}
