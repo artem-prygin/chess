@@ -31,7 +31,8 @@ export class AppComponent implements OnInit, OnDestroy {
     currentTurnColor: WhiteBlackEnum = WhiteBlackEnum.WHITE;
     sub$ = new Subscription();
     activeField: IFieldPosition;
-    possibleMoves: IFieldPosition[] = [];
+    dirtyPossibleMoves: IFieldPosition[] = [];
+    filteredMoves: IFieldPosition[] = [];
     ROWS = GameConstants.ROWS;
     COLUMNS = GameConstants.COLUMNS;
     moves: IMovesHistory[];
@@ -126,14 +127,163 @@ export class AppComponent implements OnInit, OnDestroy {
     setActiveFigure(column: number, row: number): void {
         const figure = this.getFigure(column, row);
         if (!figure || figure.color !== this.currentTurnColor) {
-            this.activeFigure = null;
-            this.possibleMoves = [];
+            this.resetActiveData();
             return;
         }
 
         this.activeFigure = figure;
-        this.possibleMoves = this.generatePossibleMoves(figure);
-        console.log(this.possibleMoves);
+        this.dirtyPossibleMoves = this.generatePossibleMoves(figure);
+        this.filteredMoves = this.generateFilteredMoves();
+    }
+
+    generateFilteredMoves(): IFieldPosition[] {
+        const unavailableMoves: IFieldPosition[] = [];
+        this.dirtyPossibleMoves.forEach(({ column, row }) => {
+            const emulatedFigures: IFigure[] = this.figures.map((figure) => {
+                if (this.activeFigure.id === figure.id) {
+                    return {
+                        ...figure,
+                        column,
+                        row,
+                    };
+                }
+                return figure;
+            });
+
+            const king = emulatedFigures
+                .find(({ type, color }) => type === FigureTypeEnum.KING && color === this.currentTurnColor);
+
+            const { column: kingColumn, row: kingRow } = king;
+
+            // horizontal to left
+            const horizontalAttackers = [FigureTypeEnum.QUEEN, FigureTypeEnum.ROOK, FigureTypeEnum.KING];
+            for (let iColumn = kingColumn - 1; iColumn >= 1; iColumn -= 1) {
+                const figureOnTheWay = emulatedFigures
+                    .find((f) => f.column === iColumn && f.row === kingRow);
+
+                if (figureOnTheWay
+                    && (figureOnTheWay.color === this.currentTurnColor || !horizontalAttackers.includes(figureOnTheWay.type))
+                ) {
+                    break;
+                }
+
+                if (kingColumn - iColumn === 1
+                    && figureOnTheWay
+                    && figureOnTheWay.type === FigureTypeEnum.KING
+                ) {
+                    unavailableMoves.push({ column, row });
+                    break;
+                }
+
+                if (figureOnTheWay && horizontalAttackers.includes(figureOnTheWay.type)) {
+                    if (figureOnTheWay.type === FigureTypeEnum.KING) {
+                        break;
+                    }
+                    unavailableMoves.push({ column, row });
+                    break;
+                }
+            }
+
+            // horizontal to right
+            for (let iColumn = kingColumn + 1; iColumn <= GameConstants.COLUMNS_COUNT; iColumn += 1) {
+                const figureOnTheWay = emulatedFigures
+                    .find((f) => f.column === iColumn && f.row === kingRow);
+
+                if (figureOnTheWay && (figureOnTheWay.color === this.currentTurnColor)) {
+                    break;
+                }
+
+                if (iColumn - kingColumn === 1
+                    && figureOnTheWay
+                    && figureOnTheWay.color !== this.currentTurnColor
+                    && figureOnTheWay.type === FigureTypeEnum.KING
+                ) {
+                    unavailableMoves.push({ column, row });
+                    break;
+                }
+
+                if (figureOnTheWay
+                    && figureOnTheWay.color !== this.currentTurnColor
+                    && (figureOnTheWay.type === FigureTypeEnum.QUEEN || figureOnTheWay.type === FigureTypeEnum.ROOK)
+                ) {
+                    unavailableMoves.push({ column, row });
+                    break;
+                }
+            }
+
+            // diagonal top to left
+            const diagonalAttackers = [FigureTypeEnum.QUEEN, FigureTypeEnum.BISHOP, FigureTypeEnum.KING];
+            let index = 1;
+            for (let iColumn = kingColumn - 1; iColumn >= 1; iColumn -= 1) {
+                const figureOnTheWay = emulatedFigures
+                    .find((f) => f.column === iColumn && f.row === kingRow + index);
+
+                if (figureOnTheWay
+                    && (figureOnTheWay.color === this.currentTurnColor || !diagonalAttackers.includes(figureOnTheWay.type))
+                ) {
+                    break;
+                }
+
+                if (kingColumn - iColumn === 1
+                    && figureOnTheWay
+                    && figureOnTheWay.type === FigureTypeEnum.KING
+                ) {
+                    unavailableMoves.push({ column, row });
+                    break;
+                }
+
+                if (figureOnTheWay && diagonalAttackers.includes(figureOnTheWay.type)) {
+                    if (figureOnTheWay.type === FigureTypeEnum.KING) {
+                        break;
+                    }
+                    unavailableMoves.push({ column, row });
+                    break;
+                }
+
+                index += 1;
+            }
+
+            // diagonal top to right
+            index = 1;
+            for (let iColumn = kingColumn + 1; iColumn <= GameConstants.COLUMNS_COUNT; iColumn += 1) {
+                const figureOnTheWay = emulatedFigures
+                    .find((f) => f.column === iColumn && f.row === kingRow + index);
+
+                if (figureOnTheWay && figureOnTheWay.color === this.currentTurnColor) {
+                    break;
+                }
+
+                if (iColumn - kingColumn === 1
+                    && figureOnTheWay
+                    && figureOnTheWay.color !== this.currentTurnColor
+                    && figureOnTheWay.type === FigureTypeEnum.KING
+                ) {
+                    unavailableMoves.push({ column, row });
+                    break;
+                }
+
+                if (figureOnTheWay
+                    && figureOnTheWay.color !== this.currentTurnColor
+                    && (figureOnTheWay.type === FigureTypeEnum.QUEEN || figureOnTheWay.type === FigureTypeEnum.BISHOP)
+                ) {
+                    unavailableMoves.push({ column, row });
+                    break;
+                }
+
+                index += 1;
+            }
+        });
+
+        console.log('all', this.dirtyPossibleMoves);
+        console.log('unavailable', unavailableMoves);
+        const filteredMoves = this.dirtyPossibleMoves
+            .filter((possibleMove) => {
+                return !unavailableMoves.some((unavailableMove) => {
+                    return unavailableMove.column === possibleMove.column && unavailableMove.row === possibleMove.row;
+                });
+            });
+        console.log('filtered', filteredMoves);
+        return filteredMoves;
     }
 
     generatePossibleMoves(figure: IFigure): IFieldPosition[] {
@@ -156,12 +306,12 @@ export class AppComponent implements OnInit, OnDestroy {
     }
 
     isPossibleMove(column: number, row: number): boolean {
-        return this.possibleMoves
+        return this.filteredMoves
             .some((move) => move.column === column && move.row === row);
     }
 
     getMove(column: number, row: number): IFieldPosition {
-        return this.possibleMoves
+        return this.filteredMoves
             .find((move) => move.column === column && move.row === row);
     }
 
@@ -173,15 +323,26 @@ export class AppComponent implements OnInit, OnDestroy {
         }
 
         this.store.dispatch(gameActions.moveFigure({ figure: this.activeFigure, move }));
-        this.activeFigure = null;
-        this.possibleMoves = [];
+        this.resetActiveData();
     }
 
     ngOnDestroy(): void {
         this.sub$.unsubscribe();
     }
 
+    resetActiveData(): void {
+        this.activeFigure = null;
+        this.filteredMoves = [];
+        this.dirtyPossibleMoves = [];
+    }
+
     resetGame(): void {
         this.store.dispatch(gameActions.resetGame());
+        this.resetActiveData();
+    }
+
+    undoMove(): void {
+        this.store.dispatch(gameActions.undoMove());
+        this.resetActiveData();
     }
 }

@@ -14,3 +14,7 @@ export const moveFigure = createAction(
 export const resetGame = createAction(
     'Reset Game',
 );
+
+export const undoMove = createAction(
+    'Undo Move',
+);

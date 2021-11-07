@@ -128,9 +128,8 @@ export class PawnService implements IGeneratePossibleMoves {
         this.currentColor = currentFigure.color;
         this.moveFactor = this.currentColor === WhiteBlackEnum.WHITE ? 1 : -1;
         this.lastMove = moves.length > 0 && moves[moves.length - 1];
-        console.log(this.lastMove);
 
-        const possibleMoves = [
+        const dirtyPossibleMoves = [
             this.getOneFieldFurtherPosition(),
             this.getTwoFieldsFurtherPosition(),
             this.getOneFieldDiagonallyPosition(1),
@@ -139,8 +138,6 @@ export class PawnService implements IGeneratePossibleMoves {
             this.getEnPassantPosition(-1),
         ];
 
-        console.log(possibleMoves);
-
-        return possibleMoves.filter((move) => !!move);
+        return dirtyPossibleMoves.filter((move) => !!move);
     }
 }
