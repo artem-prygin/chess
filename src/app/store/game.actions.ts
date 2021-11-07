@@ -1,6 +1,6 @@
 import { createAction, props } from '@ngrx/store';
 import { IFigure } from '../models/figure.interface';
-import { ColumnNames } from '../enum/column-names.enum';
+import { IFieldPosition } from '../models/field-position.interface';
 
 export const testAction = createAction(
     'testAction',
@@ -8,5 +8,9 @@ export const testAction = createAction(
 
 export const moveFigure = createAction(
     'Move Figure',
-    props<{ figure: IFigure; column: ColumnNames; row: number }>(),
+    props<{ figure: IFigure; move: IFieldPosition }>(),
+);
+
+export const resetGame = createAction(
+    'Reset Game',
 );

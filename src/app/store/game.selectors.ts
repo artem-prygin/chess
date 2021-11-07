@@ -12,3 +12,8 @@ export const selectCurrentTurn = createSelector(
     getGameState,
     ({ currentTurn }) => currentTurn,
 );
+
+export const selectMoves = createSelector(
+    getGameState,
+    ({ moves }) => moves,
+);

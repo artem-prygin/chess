@@ -10,6 +10,12 @@ import { WhiteBlackEnum } from './enum/white-black.enum';
 import { Subscription } from 'rxjs';
 import { IFieldPosition } from './models/field-position.interface';
 import { PawnService } from './services/pawn-service';
+import { IMovesHistory } from './models/moves-history.interface';
+import { RookService } from './services/rook-service';
+import { BishopService } from './services/bishop-service';
+import { QueenService } from './services/queen-service';
+import { KnightService } from './services/knight-service';
+import { KingService } from './services/king-service';
 
 @Component({
     selector: 'app-root',
@@ -27,10 +33,17 @@ export class AppComponent implements OnInit, OnDestroy {
     activeField: IFieldPosition;
     possibleMoves: IFieldPosition[] = [];
     ROWS = GameConstants.ROWS;
+    COLUMNS = GameConstants.COLUMNS;
+    moves: IMovesHistory[];
 
     constructor(
         private store: Store,
         private pawnService: PawnService,
+        private rookService: RookService,
+        private bishopService: BishopService,
+        private queenService: QueenService,
+        private knightService: KnightService,
+        private kingService: KingService,
     ) {
     }
 
@@ -49,15 +62,21 @@ export class AppComponent implements OnInit, OnDestroy {
             this.store.select(gameSelectors.selectCurrentTurn).pipe(
                 distinctUntilChanged((a, b) => a === b),
             ).subscribe((currentTurn) => {
-                console.log(currentTurn);
-                setTimeout(() => {
-                    this.ROWS = currentTurn === WhiteBlackEnum.WHITE
-                        ? GameConstants.ROWS
-                        : [...GameConstants.ROWS].reverse();
-
-                    console.log(this.ROWS);
-                }, 1000);
                 this.currentTurnColor = currentTurn;
+                // this.ROWS = currentTurn === WhiteBlackEnum.WHITE
+                //     ? GameConstants.ROWS
+                //     : [...GameConstants.ROWS].reverse();
+                // this.COLUMNS = currentTurn === WhiteBlackEnum.WHITE
+                //     ? GameConstants.COLUMNS
+                //     : [...GameConstants.COLUMNS].reverse();
+            }),
+        );
+
+        this.sub$.add(
+            this.store.select(gameSelectors.selectMoves).pipe(
+                distinctUntilChanged((a, b) => JSON.stringify(a) === JSON.stringify(b)),
+            ).subscribe((moves) => {
+                this.moves = moves;
             }),
         );
     }
@@ -118,25 +137,21 @@ export class AppComponent implements OnInit, OnDestroy {
     }
 
     generatePossibleMoves(figure: IFigure): IFieldPosition[] {
-        if (figure.type !== FigureTypeEnum.PAWN && figure.type !== FigureTypeEnum.KNIGHT) {
-            return [];
-        }
-
-        if (figure.type === FigureTypeEnum.PAWN) {
-            return this.pawnService.generatePossibleMoves(figure, this.figures);
-        }
-
-        if (figure.type === FigureTypeEnum.KNIGHT) {
-            return [
-                {
-                    column: figure.column + 1,
-                    row: figure.color === WhiteBlackEnum.WHITE ? figure.row + 2 : figure.row - 2,
-                },
-                {
-                    column: figure.column - 1,
-                    row: figure.color === WhiteBlackEnum.WHITE ? figure.row + 2 : figure.row - 2,
-                },
-            ];
+        switch (figure.type) {
+            case FigureTypeEnum.PAWN:
+                return this.pawnService.generatePossibleMoves(figure, this.figures, this.moves);
+            case FigureTypeEnum.ROOK:
+                return this.rookService.generatePossibleMoves(figure, this.figures);
+            case FigureTypeEnum.BISHOP:
+                return this.bishopService.generatePossibleMoves(figure, this.figures);
+            case FigureTypeEnum.QUEEN:
+                return this.queenService.generatePossibleMoves(figure, this.figures);
+            case FigureTypeEnum.KNIGHT:
+                return this.knightService.generatePossibleMoves(figure, this.figures);
+            case FigureTypeEnum.KING:
+                return this.kingService.generatePossibleMoves(figure, this.figures);
+            default:
+                return [];
         }
     }
 
@@ -145,19 +160,28 @@ export class AppComponent implements OnInit, OnDestroy {
             .some((move) => move.column === column && move.row === row);
     }
 
+    getMove(column: number, row: number): IFieldPosition {
+        return this.possibleMoves
+            .find((move) => move.column === column && move.row === row);
+    }
+
     moveFigure(column: number, row: number): void {
-        const isPossibleMove = this.isPossibleMove(column, row);
-        if (!isPossibleMove) {
+        const move = this.getMove(column, row);
+        if (!move) {
             this.setActiveFigure(column, row);
             return;
         }
 
-        this.store.dispatch(gameActions.moveFigure({ figure: this.activeFigure, column, row }));
+        this.store.dispatch(gameActions.moveFigure({ figure: this.activeFigure, move }));
         this.activeFigure = null;
         this.possibleMoves = [];
     }
 
     ngOnDestroy(): void {
         this.sub$.unsubscribe();
+    }
+
+    resetGame(): void {
+        this.store.dispatch(gameActions.resetGame());
     }
 }

@@ -1,6 +1,6 @@
 <div class="board">
     <ng-container *ngFor="let row of ROWS">
-        <ng-container *ngFor="let column of GameConstants.COLUMNS">
+        <ng-container *ngFor="let column of COLUMNS">
             <div class="field"
                  (click)="activeFigure ? moveFigure(column, row) : setActiveFigure(column, row)"
                  [ngStyle]="{'background-image': getFigureImage(column, row)}"
@@ -13,3 +13,5 @@
         </ng-container>
     </ng-container>
 </div>
+
+<button (click)="resetGame()">Reset Game</button>

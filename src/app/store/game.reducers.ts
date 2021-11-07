@@ -4,6 +4,8 @@ import { FigureTypeEnum } from '../enum/figure-type.enum';
 import { ColumnNames } from '../enum/column-names.enum';
 import { createReducer, on } from '@ngrx/store';
 import * as gameActions from './game.actions';
+import { GameConstants } from '../constants/game-constants';
+import { LocalStorageService } from '../services/local-storage-service';
 
 const initialState: GameState = {
     figures: [
@@ -269,26 +271,49 @@ const initialState: GameState = {
 };
 
 export const GameReducer = createReducer(
-    initialState,
-    on(gameActions.moveFigure, (state, { figure, column, row }) => {
-        const prevColumn = figure.column;
-        const prevRow = figure.row;
-        const eatenFigure = [...state.figures]
-            .find((f) => f.column === column && f.row === row);
-        return {
-            currentTurn: state.currentTurn === WhiteBlackEnum.WHITE ? WhiteBlackEnum.BLACK : WhiteBlackEnum.WHITE,
-            moves: [...state.moves, `${prevColumn}${prevRow}-${column}${row}`],
-            figures: [...state.figures].map((f) => {
-                if (f.id === eatenFigure?.id) {
-                    return { ...f, column: null, row: null, active: false };
+    JSON.parse(LocalStorageService.getItem('game')) || initialState,
+    on(gameActions.moveFigure, (state, { figure, move }) => {
+        const { type, column: prevColumn, row: prevRow } = figure;
+        const { column: currentColumn, row: currentRow, enPassantMove } = move;
+
+        const eatenFigure = enPassantMove
+            ? [...state.figures]
+                .find((f) => f.column === currentColumn && f.row === prevRow)
+            : [...state.figures]
+                .find((f) => f.column === currentColumn && f.row === currentRow);
+
+        const newMove = { type, prevColumn, prevRow, currentColumn, currentRow };
+        const moves = [...state.moves, newMove];
+        const currentTurn = state.currentTurn === WhiteBlackEnum.WHITE
+            ? WhiteBlackEnum.BLACK
+            : WhiteBlackEnum.WHITE;
+
+        const figures = [...state.figures].map((f) => {
+            if (f.id === eatenFigure?.id) {
+                return { ...f, column: null, row: null, active: false };
+            }
+
+            if (f.id === figure.id) {
+                if (f.type === FigureTypeEnum.PAWN && f.color === WhiteBlackEnum.WHITE && currentRow === GameConstants.MAX_ROW_COLUMN) {
+                    return { ...f, type: FigureTypeEnum.QUEEN, column: currentColumn, row: currentRow };
                 }
 
-                if (f.id === figure.id) {
-                    return { ...f, column: column, row: row };
+                if (f.type === FigureTypeEnum.PAWN && f.color === WhiteBlackEnum.BLACK && currentRow === 1) {
+                    return { ...f, type: FigureTypeEnum.QUEEN, column: currentColumn, row: currentRow };
                 }
 
-                return f;
-            }),
-        };
+                return { ...f, column: currentColumn, row: currentRow };
+            }
+
+            return f;
+        });
+
+        const gameInfo = { currentTurn, moves, figures };
+        LocalStorageService.setItem('game', JSON.stringify(gameInfo));
+        return gameInfo;
+    }),
+    on(gameActions.resetGame, () => {
+        LocalStorageService.removeItem('game');
+        return initialState;
     }),
 );
