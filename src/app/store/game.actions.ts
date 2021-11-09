@@ -11,6 +11,16 @@ export const moveFigure = createAction(
     props<{ figure: IFigure; move: IFieldPosition }>(),
 );
 
+export const makeCastling = createAction(
+    'Make Castling',
+    props<{ king: IFigure; move: IFieldPosition }>(),
+);
+
+export const makeEnPassantMove = createAction(
+    'Make En Passant Move',
+    props<{ pawn: IFigure; move: IFieldPosition }>(),
+);
+
 export const resetGame = createAction(
     'Reset Game',
 );

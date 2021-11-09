@@ -1,5 +1,6 @@
 import { ColumnNames } from '../enum/column-names.enum';
 import { FigureTypeEnum } from '../enum/figure-type.enum';
+import { CastlingMoveTypeEnum } from '../enum/castling-move-type.enum';
 
 export interface IMovesHistory {
     moveNumber: number;
@@ -8,4 +9,5 @@ export interface IMovesHistory {
     currentRow: number;
     prevColumn?: ColumnNames;
     prevRow?: number;
+    castlingMoveType?: CastlingMoveTypeEnum;
 }
