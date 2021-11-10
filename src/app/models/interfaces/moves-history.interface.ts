@@ -10,4 +10,7 @@ export interface IMovesHistory {
     prevColumn?: ColumnNames;
     prevRow?: number;
     castlingMoveType?: CastlingMoveTypeEnum;
+    eatenFigure?: boolean;
+    isCheck?: boolean;
+    isMate?: boolean;
 }

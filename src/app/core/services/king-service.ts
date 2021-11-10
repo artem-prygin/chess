@@ -1,12 +1,13 @@
-import { IFigure } from '../models/figure.interface';
-import { IFieldPosition } from '../models/field-position.interface';
-import { WhiteBlackEnum } from '../enum/white-black.enum';
+import { IFigure } from '../../models/interfaces/figure.interface';
+import { IFieldPosition } from '../../models/interfaces/field-position.interface';
+import { WhiteBlackEnum } from '../../models/enum/white-black.enum';
 import { Injectable } from '@angular/core';
-import { IGeneratePossibleMoves } from '../models/generate-possible-moves.interface';
-import { GameConstants } from '../constants/game-constants';
-import { FigureTypeEnum } from '../enum/figure-type.enum';
-import { ColumnNames } from '../enum/column-names.enum';
-import { CastlingMoveTypeEnum } from '../enum/castling-move-type.enum';
+import { IGeneratePossibleMoves } from '../../models/interfaces/generate-possible-moves.interface';
+import { GameConstants } from '../../models/constants/game-constants';
+import { FigureTypeEnum } from '../../models/enum/figure-type.enum';
+import { ColumnNames } from '../../models/enum/column-names.enum';
+import { CastlingMoveTypeEnum } from '../../models/enum/castling-move-type.enum';
+import { VerifyCheckService } from './verify-check.service';
 
 
 @Injectable({ providedIn: 'root' })
@@ -16,7 +17,9 @@ export class KingService implements IGeneratePossibleMoves {
     currentPosition: IFieldPosition;
     currentColor: WhiteBlackEnum;
 
-    constructor() {
+    constructor(
+        private verifyCheckService: VerifyCheckService,
+    ) {
     }
 
     getNewPosition(columnDiff: number, rowDiff: number): IFieldPosition {
@@ -44,6 +47,10 @@ export class KingService implements IGeneratePossibleMoves {
     }
 
     getShortCastlingMove(): IFieldPosition {
+        if (this.verifyCheckService.verifyCheck(this.currentPosition.column, this.currentPosition.row)) {
+            return;
+        }
+
         if (this.currentFigure.movesHistory.length > 0) {
             return;
         }
@@ -64,7 +71,6 @@ export class KingService implements IGeneratePossibleMoves {
                 && f.column === ColumnNames.H,
             );
 
-        console.log(rook);
         if (!rook) {
             return;
         }
@@ -77,6 +83,10 @@ export class KingService implements IGeneratePossibleMoves {
     }
 
     getLongCastlingMove(): IFieldPosition {
+        if (this.verifyCheckService.verifyCheck(this.currentPosition.column, this.currentPosition.row)) {
+            return;
+        }
+
         if (this.currentFigure.movesHistory.length > 0) {
             return;
         }

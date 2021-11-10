@@ -1,18 +1,1 @@
-<div class="board">
-    <ng-container *ngFor="let row of ROWS">
-        <ng-container *ngFor="let column of COLUMNS">
-            <div class="field"
-                 (click)="activeFigure ? moveFigure(column, row) : setActiveFigure(column, row)"
-                 [ngStyle]="{'background-image': getFigureImage(column, row)}"
-                 [class.has-figure]="getFigureOfCurrentColor(column, row) || isPossibleMove(column, row)"
-                 [class.has-figure__active]="isActiveField(column, row)"
-                 [class.possible-move]="isPossibleMove(column, row)"
-                 [class.field-white]="(column % 2 !== 0 && row % 2 !== 0) || (column % 2 === 0 && row % 2 === 0)"
-                 [class.field-black]="(column % 2 !== 0 && row % 2 === 0) || (column % 2 === 0 && row % 2 !== 0)">
-            </div>
-        </ng-container>
-    </ng-container>
-</div>
-
-<button (click)="resetGame()">Reset Game</button>
-<button (click)="undoMove()">Undo move</button>
+<app-game></app-game>

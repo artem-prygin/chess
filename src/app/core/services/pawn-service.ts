@@ -1,12 +1,12 @@
-import { IFigure } from '../models/figure.interface';
-import { IFieldPosition } from '../models/field-position.interface';
-import { WhiteBlackEnum } from '../enum/white-black.enum';
-import { GameConstants } from '../constants/game-constants';
-import { ColumnNames } from '../enum/column-names.enum';
+import { IFigure } from '../../models/interfaces/figure.interface';
+import { IFieldPosition } from '../../models/interfaces/field-position.interface';
+import { WhiteBlackEnum } from '../../models/enum/white-black.enum';
+import { GameConstants } from '../../models/constants/game-constants';
+import { ColumnNames } from '../../models/enum/column-names.enum';
 import { Injectable } from '@angular/core';
-import { IGeneratePossibleMoves } from '../models/generate-possible-moves.interface';
-import { IMovesHistory } from '../models/moves-history.interface';
-import { FigureTypeEnum } from '../enum/figure-type.enum';
+import { IGeneratePossibleMoves } from '../../models/interfaces/generate-possible-moves.interface';
+import { IMovesHistory } from '../../models/interfaces/moves-history.interface';
+import { FigureTypeEnum } from '../../models/enum/figure-type.enum';
 
 @Injectable({ providedIn: 'root' })
 export class PawnService implements IGeneratePossibleMoves {
@@ -138,6 +138,15 @@ export class PawnService implements IGeneratePossibleMoves {
             this.getEnPassantPosition(-1),
         ];
 
-        return dirtyPossibleMoves.filter((move) => !!move);
+        return dirtyPossibleMoves
+            .filter((move) => !!move)
+            .map((move) => {
+                if (this.currentColor === WhiteBlackEnum.WHITE && move.row === 8
+                    || this.currentColor === WhiteBlackEnum.BLACK && move.row === 1) {
+                    return { ...move, pawnPromotionMove: true };
+                }
+
+                return move;
+            });
     }
 }

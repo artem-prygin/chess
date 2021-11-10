@@ -1,10 +1,10 @@
-import { IFigure } from '../models/figure.interface';
-import { IFieldPosition } from '../models/field-position.interface';
-import { WhiteBlackEnum } from '../enum/white-black.enum';
+import { IFigure } from '../../models/interfaces/figure.interface';
+import { IFieldPosition } from '../../models/interfaces/field-position.interface';
+import { WhiteBlackEnum } from '../../models/enum/white-black.enum';
 import { Injectable } from '@angular/core';
-import { IGeneratePossibleMoves } from '../models/generate-possible-moves.interface';
-import { IMovesHistory } from '../models/moves-history.interface';
-import { GameConstants } from '../constants/game-constants';
+import { IGeneratePossibleMoves } from '../../models/interfaces/generate-possible-moves.interface';
+import { IMovesHistory } from '../../models/interfaces/moves-history.interface';
+import { GameConstants } from '../../models/constants/game-constants';
 
 @Injectable({ providedIn: 'root' })
 export class BishopService implements IGeneratePossibleMoves {

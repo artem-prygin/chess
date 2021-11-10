@@ -1,11 +1,11 @@
 import { Injectable } from '@angular/core';
-import { IFigure } from '../models/figure.interface';
-import { IFieldPosition } from '../models/field-position.interface';
-import { WhiteBlackEnum } from '../enum/white-black.enum';
-import { GameConstants } from '../constants/game-constants';
-import { FigureTypeEnum } from '../enum/figure-type.enum';
-import { ColumnNames } from '../enum/column-names.enum';
-import { CastlingMoveTypeEnum } from '../enum/castling-move-type.enum';
+import { IFigure } from '../../models/interfaces/figure.interface';
+import { IFieldPosition } from '../../models/interfaces/field-position.interface';
+import { WhiteBlackEnum } from '../../models/enum/white-black.enum';
+import { GameConstants } from '../../models/constants/game-constants';
+import { FigureTypeEnum } from '../../models/enum/figure-type.enum';
+import { ColumnNames } from '../../models/enum/column-names.enum';
+import { CastlingMoveTypeEnum } from '../../models/enum/castling-move-type.enum';
 
 
 @Injectable({ providedIn: 'root' })
@@ -67,8 +67,6 @@ export class VerifyCheckService {
         for (let iColumn = kingColumn + 1; iColumn <= GameConstants.COLUMNS_COUNT; iColumn += 1) {
             const figureOnTheWay = emulatedFigures
                 .find((f) => f.column === iColumn && f.row === kingRow);
-
-            console.log(kingColumn, column);
 
             if (figureOnTheWay && (figureOnTheWay.color === this.currentColor)) {
                 return false;
@@ -423,7 +421,6 @@ export class VerifyCheckService {
         this.currentColor = currentColor;
         this.figures = figures;
         this.unavailableMoves = [];
-        console.log(dirtyMoves);
 
         dirtyMoves.forEach(({ column, row, castlingMoveType }) => {
             if (castlingMoveType) {

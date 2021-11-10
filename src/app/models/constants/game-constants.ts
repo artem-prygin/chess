@@ -1,5 +1,3 @@
-import { ColumnNames } from '../enum/column-names.enum';
-
 export class GameConstants {
     static MIN_ROW_COLUMN = 1;
     static MAX_ROW_COLUMN = 8;
@@ -12,4 +10,7 @@ export class GameConstants {
     static BLACK_PAWN_START_ROW = 7;
     static WHITE_PAWN_EN_PASSANT_ROW = 5;
     static BLACK_PAWN_EN_PASSANT_ROW = 4;
+    static FIGURE_IMAGE_LINK = 'assets/figures/';
+    static FIGURE_IMAGE_BG_LINK = 'url(assets/figures/';
+    static FIGURE_IMAGE_EXTENSION = '.png';
 }

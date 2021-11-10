@@ -1,10 +1,6 @@
 import { createAction, props } from '@ngrx/store';
-import { IFigure } from '../models/figure.interface';
-import { IFieldPosition } from '../models/field-position.interface';
-
-export const testAction = createAction(
-    'testAction',
-);
+import { IFigure } from '../models/interfaces/figure.interface';
+import { IFieldPosition } from '../models/interfaces/field-position.interface';
 
 export const moveFigure = createAction(
     'Move Figure',
@@ -18,6 +14,11 @@ export const makeCastling = createAction(
 
 export const makeEnPassantMove = createAction(
     'Make En Passant Move',
+    props<{ pawn: IFigure; move: IFieldPosition }>(),
+);
+
+export const makePawnPromotionMove = createAction(
+    'Make Pawn Promotion Move',
     props<{ pawn: IFigure; move: IFieldPosition }>(),
 );
 

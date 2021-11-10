@@ -5,6 +5,6 @@ export interface IFieldPosition {
     column: ColumnNames;
     row: number;
     enPassantMove?: boolean;
-    pawnToFigureMove?: boolean;
+    pawnPromotionMove?: boolean;
     castlingMoveType?: CastlingMoveTypeEnum;
 }
