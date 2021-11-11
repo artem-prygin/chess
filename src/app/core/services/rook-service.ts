@@ -5,6 +5,7 @@ import { Injectable } from '@angular/core';
 import { IGeneratePossibleMoves } from '../../models/interfaces/generate-possible-moves.interface';
 import { IMovesHistory } from '../../models/interfaces/moves-history.interface';
 import { GameConstants } from '../../models/constants/game-constants';
+import { IMove } from '../../models/interfaces/move.interface';
 
 @Injectable({ providedIn: 'root' })
 export class RookService implements IGeneratePossibleMoves {
@@ -27,8 +28,8 @@ export class RookService implements IGeneratePossibleMoves {
             .some((f) => f.column === column && f.row === row && f.color !== this.currentColor);
     }
 
-    getVerticalToTopMoves(): IFieldPosition[] {
-        const dirtyPossibleMoves: IFieldPosition[] = [];
+    getVerticalToTopMoves(): IMove[] {
+        const dirtyPossibleMoves: IMove[] = [];
 
         for (let row = this.currentPosition.row + 1; row <= GameConstants.ROWS_COUNT; row += 1) {
             const isPossibleMove = this.isPossibleMove(this.currentPosition.column, row);
@@ -50,8 +51,8 @@ export class RookService implements IGeneratePossibleMoves {
         return dirtyPossibleMoves;
     }
 
-    getVerticalToBottomMoves(): IFieldPosition[] {
-        const dirtyPossibleMoves: IFieldPosition[] = [];
+    getVerticalToBottomMoves(): IMove[] {
+        const dirtyPossibleMoves: IMove[] = [];
 
         for (let row = this.currentPosition.row - 1; row >= 1; row -= 1) {
             const isPossibleMove = this.isPossibleMove(this.currentPosition.column, row);
@@ -73,8 +74,8 @@ export class RookService implements IGeneratePossibleMoves {
         return dirtyPossibleMoves;
     }
 
-    getHorizontalToLeftMoves(): IFieldPosition[] {
-        const dirtyPossibleMoves: IFieldPosition[] = [];
+    getHorizontalToLeftMoves(): IMove[] {
+        const dirtyPossibleMoves: IMove[] = [];
 
         for (let column = this.currentPosition.column - 1; column >= 1; column -= 1) {
             const isPossibleMove = this.isPossibleMove(column, this.currentPosition.row);
@@ -96,8 +97,8 @@ export class RookService implements IGeneratePossibleMoves {
         return dirtyPossibleMoves;
     }
 
-    getHorizontalToRightMoves(): IFieldPosition[] {
-        const dirtyPossibleMoves: IFieldPosition[] = [];
+    getHorizontalToRightMoves(): IMove[] {
+        const dirtyPossibleMoves: IMove[] = [];
 
         for (let column = this.currentPosition.column + 1; column <= GameConstants.COLUMNS_COUNT; column += 1) {
             const isPossibleMove = this.isPossibleMove(column, this.currentPosition.row);
@@ -119,7 +120,7 @@ export class RookService implements IGeneratePossibleMoves {
         return dirtyPossibleMoves;
     }
 
-    generatePossibleMoves(currentFigure: IFigure, figures: IFigure[]): IFieldPosition[] {
+    generatePossibleMoves(currentFigure: IFigure, figures: IFigure[]): IMove[] {
         this.figures = figures;
         this.currentFigure = currentFigure;
         this.currentPosition = { column: currentFigure.column, row: currentFigure.row };

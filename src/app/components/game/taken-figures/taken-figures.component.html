@@ -1,0 +1,13 @@
+<div class="taken-figures">
+    <div class="taken-figures__group">
+        <img class="figure-img"
+             *ngFor="let figure of takenWhiteFigures$ | async"
+             src="{{ FigureImageUtil.getFigureImage(figure, WhiteBlackEnum.getStringValue(figure.color), GameConstants.FIGURE_IMAGE_LINK) }}">
+    </div>
+
+    <div class="taken-figures__group">
+        <img class="figure-img"
+             *ngFor="let figure of takenBlackFigures$ | async"
+             src="{{ FigureImageUtil.getFigureImage(figure, WhiteBlackEnum.getStringValue(figure.color), GameConstants.FIGURE_IMAGE_LINK) }}">
+    </div>
+</div>

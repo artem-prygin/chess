@@ -4,7 +4,6 @@ import { AppState } from '../../../store';
 import * as gameSelectors from '../../../store/game.selectors';
 import { Subscription } from 'rxjs';
 import { IMovesHistory } from '../../../models/interfaces/moves-history.interface';
-import { MatDialogRef } from '@angular/material/dialog';
 
 
 @Component({
@@ -18,18 +17,15 @@ export class MovesHistoryComponent implements OnInit, OnDestroy {
 
     constructor(
         private store: Store<AppState>,
-        private dialogRef: MatDialogRef<MovesHistoryComponent>,
     ) {
     }
 
     ngOnInit(): void {
-        this.store.select(gameSelectors.selectMoves).subscribe((moves) => {
-            this.moves = moves;
-        });
-    }
-
-    close(): void {
-        this.dialogRef.close({ pisya: true });
+        this.sub$.add(
+            this.store.select(gameSelectors.selectMoves).subscribe((moves) => {
+                this.moves = moves;
+            }),
+        );
     }
 
     ngOnDestroy(): void {

@@ -3,6 +3,7 @@ import { IFieldPosition } from '../../models/interfaces/field-position.interface
 import { WhiteBlackEnum } from '../../models/enum/white-black.enum';
 import { Injectable } from '@angular/core';
 import { IGeneratePossibleMoves } from '../../models/interfaces/generate-possible-moves.interface';
+import { IMove } from '../../models/interfaces/move.interface';
 
 
 @Injectable({ providedIn: 'root' })
@@ -15,7 +16,7 @@ export class KnightService implements IGeneratePossibleMoves {
     constructor() {
     }
 
-    getNewPosition(columnDiff: number, rowDiff: number): IFieldPosition {
+    getNewPosition(columnDiff: number, rowDiff: number): IMove {
         const destinationFieldIsAvailable = !this.figures
             .some((f) => f.column === this.currentPosition.column + columnDiff
                 && f.row === this.currentPosition.row + rowDiff
@@ -31,7 +32,7 @@ export class KnightService implements IGeneratePossibleMoves {
         };
     }
 
-    generatePossibleMoves(currentFigure: IFigure, figures: IFigure[]): IFieldPosition[] {
+    generatePossibleMoves(currentFigure: IFigure, figures: IFigure[]): IMove[] {
         this.figures = figures;
         this.currentFigure = currentFigure;
         this.currentPosition = { column: currentFigure.column, row: currentFigure.row };

@@ -13,6 +13,7 @@ import { GameComponent } from './components/game/game.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { PawnPromotionComponent } from './components/game/pawn-promotion/pawn-promotion.component';
+import { TakenFiguresComponent } from './components/game/taken-figures/taken-figures.component';
 
 @NgModule({
     declarations: [
@@ -22,6 +23,7 @@ import { PawnPromotionComponent } from './components/game/pawn-promotion/pawn-pr
         MovesHistoryComponent,
         MoveDisplay,
         PawnPromotionComponent,
+        TakenFiguresComponent,
     ],
     imports: [
         BrowserModule,
@@ -33,9 +35,6 @@ import { PawnPromotionComponent } from './components/game/pawn-promotion/pawn-pr
         BrowserAnimationsModule,
         MatDialogModule,
         // EffectsModule.forRoot([...])
-    ],
-    entryComponents: [
-
     ],
     providers: [
         reducerProvider,

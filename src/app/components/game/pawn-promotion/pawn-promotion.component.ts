@@ -14,7 +14,7 @@ export class PawnPromotionComponent {
     GameConstants = GameConstants;
     promotionFiguresNames: string[] = ['queen', 'rook', 'bishop', 'knight'];
     promotionFiguresTypes: FigureTypeEnum[] = [FigureTypeEnum.QUEEN, FigureTypeEnum.ROOK, FigureTypeEnum.BISHOP, FigureTypeEnum.KNIGHT];
-    currentColor: 'white' | 'black';
+    currentColor: string;
 
     constructor(
         private dialogRef: MatDialogRef<PawnPromotionComponent>,
@@ -22,12 +22,10 @@ export class PawnPromotionComponent {
             currentColor: WhiteBlackEnum,
         },
     ) {
-        this.currentColor = this.data.currentColor === WhiteBlackEnum.WHITE
-            ? 'white'
-            : 'black';
+        this.currentColor = WhiteBlackEnum.getStringValue(this.data.currentColor);
     }
 
     chooseFigure(figureType: FigureTypeEnum): void {
-        this.dialogRef.close({ figureType });
+        this.dialogRef.close(figureType);
     }
 }

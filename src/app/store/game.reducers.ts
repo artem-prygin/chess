@@ -4,17 +4,17 @@ import { FigureTypeEnum } from '../models/enum/figure-type.enum';
 import { ColumnNames } from '../models/enum/column-names.enum';
 import { createReducer, on } from '@ngrx/store';
 import * as gameActions from './game.actions';
-import { GameConstants } from '../models/constants/game-constants';
 import { LocalStorageService } from '../core/services/local-storage-service';
 import { IMovesHistory } from '../models/interfaces/moves-history.interface';
 import { IFigure } from '../models/interfaces/figure.interface';
 import { CastlingMoveTypeEnum } from '../models/enum/castling-move-type.enum';
 
+
 export const GameReducer = createReducer(
     JSON.parse(LocalStorageService.getItem('game')) || initialState,
     on(gameActions.moveFigure, (state, { figure, move }) => {
         const { type, column: prevColumn, row: prevRow } = figure;
-        const { column: currentColumn, row: currentRow } = move;
+        const { column: currentColumn, row: currentRow, isCheck, isMate } = move;
 
         const eatenFigure: IFigure = [...state.figures]
             .find((f) => f.column === currentColumn && f.row === currentRow);
@@ -22,8 +22,6 @@ export const GameReducer = createReducer(
         const moveNumber: number = state.moves.length > 0
             ? state.moves[state.moves.length - 1].moveNumber + 1
             : 1;
-        const newMove: IMovesHistory = { moveNumber, type, prevColumn, prevRow, currentColumn, currentRow };
-        const currentTurn: WhiteBlackEnum = switchTurn(state.currentTurn);
 
         const figures: IFigure[] = [...state.figures].map((f) => {
             if (f.id !== figure.id && f.id !== eatenFigure?.id) {
@@ -52,26 +50,6 @@ export const GameReducer = createReducer(
             }
 
             if (f.id === figure.id) {
-                if (f.type === FigureTypeEnum.PAWN && f.color === WhiteBlackEnum.WHITE && currentRow === GameConstants.MAX_ROW_COLUMN
-                    || f.type === FigureTypeEnum.PAWN && f.color === WhiteBlackEnum.BLACK && currentRow === 1) {
-                    movesHistory.push({
-                        type,
-                        moveNumber,
-                        prevColumn,
-                        prevRow,
-                        currentColumn,
-                        currentRow,
-                    });
-
-                    return {
-                        ...f,
-                        type: FigureTypeEnum.QUEEN,
-                        column: currentColumn,
-                        row: currentRow,
-                        movesHistory,
-                    };
-                }
-
                 movesHistory.push({
                     type,
                     moveNumber,
@@ -79,6 +57,8 @@ export const GameReducer = createReducer(
                     prevRow,
                     currentColumn,
                     currentRow,
+                    isCheck,
+                    isMate,
                 });
 
                 return {
@@ -90,12 +70,23 @@ export const GameReducer = createReducer(
             }
         });
 
+        const newMove: IMovesHistory = {
+            moveNumber,
+            type,
+            prevColumn,
+            prevRow,
+            currentColumn,
+            currentRow,
+            isCheck,
+            isMate,
+        };
+        const currentTurn: WhiteBlackEnum = switchTurn(state.currentTurn);
         const moves: IMovesHistory[] = [...state.moves, newMove];
         const gameInfo = { currentTurn, moves, figures };
         LocalStorageService.setItem('game', JSON.stringify(gameInfo));
         return gameInfo;
     }),
-    on(gameActions.makePawnPromotionMove, (state, { pawn, move }) => {
+    on(gameActions.makePawnPromotionMove, (state, { pawn, move, promotedType }) => {
         const { type, column: prevColumn, row: prevRow } = pawn;
         const { column: currentColumn, row: currentRow } = move;
 
@@ -103,7 +94,15 @@ export const GameReducer = createReducer(
             .find((f) => f.column === currentColumn && f.row === currentRow);
 
         const moveNumber: number = state.moves[state.moves.length - 1].moveNumber + 1;
-        const newMove: IMovesHistory = { moveNumber, type, prevColumn, prevRow, currentColumn, currentRow };
+        const newMove: IMovesHistory = {
+            moveNumber,
+            type,
+            prevColumn,
+            prevRow,
+            currentColumn,
+            currentRow,
+            isPawnPromotionMove: true,
+        };
 
         const figures: IFigure[] = [...state.figures].map((f) => {
             if (f.id !== pawn.id && f.id !== eatenFigure?.id) {
@@ -139,11 +138,14 @@ export const GameReducer = createReducer(
                     prevRow,
                     currentColumn,
                     currentRow,
+                    isPawnPromotionMove: true,
                 });
+
+                console.log(promotedType);
 
                 return {
                     ...f,
-                    type: FigureTypeEnum.QUEEN,
+                    type: promotedType,
                     column: currentColumn,
                     row: currentRow,
                     movesHistory,
@@ -311,6 +313,9 @@ export const GameReducer = createReducer(
                 const movesHistory = [...f.movesHistory].slice(0, -1);
                 return {
                     ...f,
+                    type: [...state.moves].pop().isPawnPromotionMove
+                        ? FigureTypeEnum.PAWN
+                        : f.type,
                     column,
                     row,
                     movesHistory,

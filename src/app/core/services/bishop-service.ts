@@ -5,6 +5,7 @@ import { Injectable } from '@angular/core';
 import { IGeneratePossibleMoves } from '../../models/interfaces/generate-possible-moves.interface';
 import { IMovesHistory } from '../../models/interfaces/moves-history.interface';
 import { GameConstants } from '../../models/constants/game-constants';
+import { IMove } from '../../models/interfaces/move.interface';
 
 @Injectable({ providedIn: 'root' })
 export class BishopService implements IGeneratePossibleMoves {
@@ -27,8 +28,8 @@ export class BishopService implements IGeneratePossibleMoves {
             .some((f) => f.column === column && f.row === row && f.color !== this.currentColor);
     }
 
-    getTopMoves(factor: -1 | 1): IFieldPosition[] {
-        const dirtyPossibleMoves: IFieldPosition[] = [];
+    getTopMoves(factor: -1 | 1): IMove[] {
+        const dirtyPossibleMoves: IMove[] = [];
         let index = 1;
 
         for (let row = this.currentPosition.row + 1; row <= GameConstants.ROWS_COUNT; row += 1) {
@@ -58,8 +59,8 @@ export class BishopService implements IGeneratePossibleMoves {
         return dirtyPossibleMoves;
     }
 
-    getBottomMoves(factor: -1 | 1): IFieldPosition[] {
-        const dirtyPossibleMoves: IFieldPosition[] = [];
+    getBottomMoves(factor: -1 | 1): IMove[] {
+        const dirtyPossibleMoves: IMove[] = [];
         let index = 1;
 
         for (let row = this.currentPosition.row - 1; row >= 1; row -= 1) {
@@ -89,7 +90,7 @@ export class BishopService implements IGeneratePossibleMoves {
         return dirtyPossibleMoves;
     }
 
-    generatePossibleMoves(currentFigure: IFigure, figures: IFigure[]): IFieldPosition[] {
+    generatePossibleMoves(currentFigure: IFigure, figures: IFigure[]): IMove[] {
         this.figures = figures;
         this.currentFigure = currentFigure;
         this.currentPosition = { column: currentFigure.column, row: currentFigure.row };

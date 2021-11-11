@@ -8,6 +8,7 @@ import { FigureTypeEnum } from '../../models/enum/figure-type.enum';
 import { ColumnNames } from '../../models/enum/column-names.enum';
 import { CastlingMoveTypeEnum } from '../../models/enum/castling-move-type.enum';
 import { VerifyCheckService } from './verify-check.service';
+import { IMove } from '../../models/interfaces/move.interface';
 
 
 @Injectable({ providedIn: 'root' })
@@ -22,7 +23,7 @@ export class KingService implements IGeneratePossibleMoves {
     ) {
     }
 
-    getNewPosition(columnDiff: number, rowDiff: number): IFieldPosition {
+    getNewPosition(columnDiff: number, rowDiff: number): IMove {
         if (this.currentPosition.column + columnDiff < 1 || this.currentPosition.column + columnDiff > GameConstants.COLUMNS_COUNT) {
             return;
         }
@@ -46,15 +47,7 @@ export class KingService implements IGeneratePossibleMoves {
         };
     }
 
-    getShortCastlingMove(): IFieldPosition {
-        if (this.verifyCheckService.verifyCheck(this.currentPosition.column, this.currentPosition.row)) {
-            return;
-        }
-
-        if (this.currentFigure.movesHistory.length > 0) {
-            return;
-        }
-
+    getShortCastlingMove(): IMove {
         const hasNearbyFigures: boolean = this.figures
             .some((f) => {
                 return f.row === this.currentPosition.row
@@ -82,15 +75,7 @@ export class KingService implements IGeneratePossibleMoves {
         };
     }
 
-    getLongCastlingMove(): IFieldPosition {
-        if (this.verifyCheckService.verifyCheck(this.currentPosition.column, this.currentPosition.row)) {
-            return;
-        }
-
-        if (this.currentFigure.movesHistory.length > 0) {
-            return;
-        }
-
+    getLongCastlingMove(): IMove {
         const hasNearbyFigures: boolean = this.figures
             .some((f) => {
                 return f.row === this.currentPosition.row
@@ -119,7 +104,7 @@ export class KingService implements IGeneratePossibleMoves {
         };
     }
 
-    generatePossibleMoves(currentFigure: IFigure, figures: IFigure[]): IFieldPosition[] {
+    generatePossibleMoves(currentFigure: IFigure, figures: IFigure[]): IMove[] {
         this.figures = figures;
         this.currentFigure = currentFigure;
         this.currentPosition = { column: currentFigure.column, row: currentFigure.row };
@@ -134,9 +119,15 @@ export class KingService implements IGeneratePossibleMoves {
             this.getNewPosition(0, -1),
             this.getNewPosition(-1, -1),
             this.getNewPosition(-1, 0),
-            this.getShortCastlingMove(),
-            this.getLongCastlingMove(),
         ];
+
+        if (this.verifyCheckService.verifyCheck(this.currentPosition.column, this.currentPosition.row, this.figures)
+            && this.currentFigure.movesHistory.length > 0) {
+            dirtyPossibleMoves.push(
+                this.getShortCastlingMove(),
+                this.getLongCastlingMove(),
+            );
+        }
 
         return dirtyPossibleMoves.filter((move) => !!move);
     }

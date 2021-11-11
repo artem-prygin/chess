@@ -1,18 +1,18 @@
 import { Injectable } from '@angular/core';
 import { IFigure } from '../../models/interfaces/figure.interface';
-import { IFieldPosition } from '../../models/interfaces/field-position.interface';
 import { WhiteBlackEnum } from '../../models/enum/white-black.enum';
 import { GameConstants } from '../../models/constants/game-constants';
 import { FigureTypeEnum } from '../../models/enum/figure-type.enum';
 import { ColumnNames } from '../../models/enum/column-names.enum';
 import { CastlingMoveTypeEnum } from '../../models/enum/castling-move-type.enum';
+import { IMove } from '../../models/interfaces/move.interface';
 
 
 @Injectable({ providedIn: 'root' })
 export class VerifyCheckService {
     figures: IFigure[];
     currentColor: WhiteBlackEnum;
-    unavailableMoves: IFieldPosition[] = [];
+    unavailableMoves: IMove[] = [];
     horizontalAttackers: FigureTypeEnum[] = [FigureTypeEnum.QUEEN, FigureTypeEnum.ROOK, FigureTypeEnum.KING];
     diagonalAttackers = [FigureTypeEnum.QUEEN, FigureTypeEnum.BISHOP, FigureTypeEnum.KING, FigureTypeEnum.PAWN];
 
@@ -25,7 +25,6 @@ export class VerifyCheckService {
         kingRow: number,
         column: ColumnNames = null,
         row: number = null,
-        castlingMoveType: CastlingMoveTypeEnum = null,
     ): boolean {
         for (let iColumn = kingColumn - 1; iColumn >= 1; iColumn -= 1) {
             const figureOnTheWay = emulatedFigures
@@ -373,7 +372,11 @@ export class VerifyCheckService {
         return false;
     }
 
-    verifyCheck(kingColumn: ColumnNames, kingRow: number): boolean {
+    verifyCheck(kingColumn: ColumnNames, kingRow: number, figures?: IFigure[]): boolean {
+        if (figures) {
+            this.figures = figures;
+        }
+
         return this.verifyDiagonalToBottomLeftCheck(this.figures, kingColumn, kingRow)
             || this.verifyHorizontalToLeftCheck(this.figures, kingColumn, kingRow)
             || this.verifyHorizontalToRightCheck(this.figures, kingColumn, kingRow)
@@ -414,10 +417,10 @@ export class VerifyCheckService {
 
     generateFilteredMoves(
         figures: IFigure[],
-        dirtyMoves: IFieldPosition[],
+        dirtyMoves: IMove[],
         currentColor: WhiteBlackEnum,
         activeFigure: IFigure,
-    ): IFieldPosition[] {
+    ): IMove[] {
         this.currentColor = currentColor;
         this.figures = figures;
         this.unavailableMoves = [];
@@ -459,18 +462,18 @@ export class VerifyCheckService {
             const g = this.verifyDiagonalToBottomLeftCheck(emulatedFigures, kingColumn, kingRow, column, row);
             const h = this.verifyDiagonalToBottomRightCheck(emulatedFigures, kingColumn, kingRow, column, row);
             const i = this.verifyKnightCheck(emulatedFigures, kingColumn, kingRow, column, row);
-            console.log(a, b, c, d, e, f, g, h, i);
+            // console.log(a, b, c, d, e, f, g, h, i);
         });
 
-        console.log('all', dirtyMoves);
-        console.log('unavailable', this.unavailableMoves);
+        // console.log('all', dirtyMoves);
+        // console.log('unavailable', this.unavailableMoves);
         const filteredMoves = dirtyMoves
             .filter((possibleMove) => {
                 return !this.unavailableMoves.some((unavailableMove) => {
                     return unavailableMove.column === possibleMove.column && unavailableMove.row === possibleMove.row;
                 });
             });
-        console.log('filtered', filteredMoves);
+        // console.log('filtered', filteredMoves);
         return filteredMoves;
     }
 

@@ -1,10 +1,11 @@
 :host {
-    width: 100%;
+    width: max-content;
+    position: relative;
 }
 
 .board {
     display: grid;
-    margin: 0 auto 20px;
+    margin: auto;
     grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr;
     width: max-content;
     border: 1px solid black;
@@ -66,4 +67,11 @@
         background-color: orangered;
         z-index: 2;
     }
+}
+
+.reset-buttons {
+    position: absolute;
+    bottom: -40px;
+    left: 50%;
+    transform: translateX(-50%);
 }

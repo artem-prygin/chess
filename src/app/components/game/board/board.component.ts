@@ -19,6 +19,8 @@ import { KingService } from '../../../core/services/king-service';
 import { VerifyCheckService } from '../../../core/services/verify-check.service';
 import { MatDialog } from '@angular/material/dialog';
 import { PawnPromotionComponent } from '../pawn-promotion/pawn-promotion.component';
+import { IMove } from '../../../models/interfaces/move.interface';
+import { FigureImageUtil } from '../../../core/utils/figure-image.util';
 
 @Component({
     selector: 'app-board',
@@ -26,17 +28,18 @@ import { PawnPromotionComponent } from '../pawn-promotion/pawn-promotion.compone
     styleUrls: ['./board.component.scss'],
 })
 export class BoardComponent implements OnInit, OnDestroy {
+    sub$ = new Subscription();
     GameConstants = GameConstants;
+    currentTurnColor: WhiteBlackEnum = WhiteBlackEnum.WHITE;
     figures: IFigure[];
     activeFigure: IFigure;
-    currentTurnColor: WhiteBlackEnum = WhiteBlackEnum.WHITE;
-    sub$ = new Subscription();
     activeField: IFieldPosition;
-    dirtyPossibleMoves: IFieldPosition[] = [];
-    filteredMoves: IFieldPosition[] = [];
+    dirtyPossibleMoves: IMove[] = [];
+    filteredMoves: IMove[] = [];
     ROWS = GameConstants.ROWS;
     COLUMNS = GameConstants.COLUMNS;
-    moves: IMovesHistory[];
+    moves: IMovesHistory[] = [];
+    gameStarted: boolean;
 
     constructor(
         private store: Store,
@@ -61,30 +64,35 @@ export class BoardComponent implements OnInit, OnDestroy {
         );
 
         this.sub$.add(
-            this.store.select(gameSelectors.selectCurrentTurn).pipe(
-                distinctUntilChanged((a, b) => a === b),
-            ).subscribe((currentTurn) => {
-                this.currentTurnColor = currentTurn;
-                const isCheck = this.verifyCheckService.verifyCheckAllMoves(this.figures, this.currentTurnColor);
-
-                if (isCheck) {
-                    console.log('isCheck');
-                }
-
-                // this.ROWS = currentTurn === WhiteBlackEnum.WHITE
-                //     ? GameConstants.ROWS
-                //     : [...GameConstants.ROWS].reverse();
-                // this.COLUMNS = currentTurn === WhiteBlackEnum.WHITE
-                //     ? GameConstants.COLUMNS
-                //     : [...GameConstants.COLUMNS].reverse();
-            }),
-        );
-
-        this.sub$.add(
             this.store.select(gameSelectors.selectMoves).pipe(
                 distinctUntilChanged((a, b) => JSON.stringify(a) === JSON.stringify(b)),
             ).subscribe((moves) => {
                 this.moves = moves;
+            }),
+        );
+
+        this.sub$.add(
+            this.store.select(gameSelectors.selectCurrentTurn).pipe(
+                distinctUntilChanged((a, b) => a === b),
+            ).subscribe((currentTurn) => {
+                console.log('switch turn');
+                this.currentTurnColor = currentTurn;
+
+                if (!this.gameStarted) {
+                    this.gameStarted = true;
+                    return;
+                }
+
+                const isCheck = this.moves.length > 0 && this.moves[this.moves.length - 1].isCheck;
+                const isMate = this.moves.length > 0 && this.moves[this.moves.length - 1].isMate;
+
+                if (isCheck) {
+                    console.log('check');
+                }
+
+                if (isMate) {
+                    console.log('mate');
+                }
             }),
         );
     }
@@ -105,26 +113,8 @@ export class BoardComponent implements OnInit, OnDestroy {
             return;
         }
 
-        const color = figure.color === WhiteBlackEnum.WHITE
-            ? 'white'
-            : 'black';
-
-        switch (figure.type) {
-            case FigureTypeEnum.PAWN:
-                return `${GameConstants.FIGURE_IMAGE_BG_LINK}${color}-pawn${GameConstants.FIGURE_IMAGE_EXTENSION}`;
-            case FigureTypeEnum.ROOK:
-                return `${GameConstants.FIGURE_IMAGE_BG_LINK}${color}-rook${GameConstants.FIGURE_IMAGE_EXTENSION}`;
-            case FigureTypeEnum.KNIGHT:
-                return `${GameConstants.FIGURE_IMAGE_BG_LINK}${color}-knight${GameConstants.FIGURE_IMAGE_EXTENSION}`;
-            case FigureTypeEnum.BISHOP:
-                return `${GameConstants.FIGURE_IMAGE_BG_LINK}${color}-bishop${GameConstants.FIGURE_IMAGE_EXTENSION}`;
-            case FigureTypeEnum.QUEEN:
-                return `${GameConstants.FIGURE_IMAGE_BG_LINK}${color}-queen${GameConstants.FIGURE_IMAGE_EXTENSION}`;
-            case FigureTypeEnum.KING:
-                return `${GameConstants.FIGURE_IMAGE_BG_LINK}${color}-king${GameConstants.FIGURE_IMAGE_EXTENSION}`;
-            default:
-                return null;
-        }
+        const color: string = WhiteBlackEnum.getStringValue(figure.color);
+        return FigureImageUtil.getFigureImage(figure, color, GameConstants.FIGURE_IMAGE_BG_LINK);
     }
 
     isActiveField(column: number, row: number): boolean {
@@ -144,7 +134,7 @@ export class BoardComponent implements OnInit, OnDestroy {
             .generateFilteredMoves(this.figures, this.dirtyPossibleMoves, this.currentTurnColor, this.activeFigure);
     }
 
-    generatePossibleMoves(figure: IFigure): IFieldPosition[] {
+    generatePossibleMoves(figure: IFigure): IMove[] {
         switch (figure.type) {
             case FigureTypeEnum.PAWN:
                 return this.pawnService.generatePossibleMoves(figure, this.figures, this.moves);
@@ -168,7 +158,7 @@ export class BoardComponent implements OnInit, OnDestroy {
             .some((move) => move.column === column && move.row === row);
     }
 
-    getMove(column: number, row: number): IFieldPosition {
+    getMove(column: number, row: number): IMove {
         return this.filteredMoves
             .find((move) => move.column === column && move.row === row);
     }
@@ -180,15 +170,44 @@ export class BoardComponent implements OnInit, OnDestroy {
             return;
         }
 
-        if (move.pawnPromotionMove) {
+        const emulatedFigures = this.figures.map((figure) => {
+            if (this.activeFigure.id === figure.id) {
+                return {
+                    ...figure,
+                    column: move.column,
+                    row: move.row,
+                };
+            }
+            return figure;
+        });
+
+        const oppositeColor = this.currentTurnColor === WhiteBlackEnum.WHITE
+            ? WhiteBlackEnum.BLACK
+            : WhiteBlackEnum.WHITE;
+
+        move.isMate = !emulatedFigures
+            .filter(({ color }) => color === oppositeColor)
+            .some((figure) => {
+                const dirtyMoves = this.generatePossibleMoves(figure);
+                const moves = this.verifyCheckService
+                    .generateFilteredMoves(emulatedFigures, dirtyMoves, oppositeColor, figure);
+                console.log(dirtyMoves, moves);
+                return moves.length > 0;
+            });
+        move.isCheck = move.isMate || this.verifyCheckService.verifyCheckAllMoves(emulatedFigures, oppositeColor);
+
+        if (move.isPawnPromotionMove) {
             const dialog = this.dialog.open(PawnPromotionComponent, {
                 disableClose: true,
                 data: { currentColor: this.currentTurnColor },
             });
-            const res = await dialog.afterClosed().toPromise();
-            console.log(res);
+            const promotedType: FigureTypeEnum = await dialog.afterClosed().toPromise();
 
-            // this.store.dispatch(gameActions.makePawnPromotionMove({ pawn: this.activeFigure, move }));
+            if (!promotedType) {
+                return;
+            }
+
+            this.store.dispatch(gameActions.makePawnPromotionMove({ pawn: this.activeFigure, move, promotedType }));
             this.resetActiveData();
             return;
         }

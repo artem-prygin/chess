@@ -7,6 +7,7 @@ import { Injectable } from '@angular/core';
 import { IGeneratePossibleMoves } from '../../models/interfaces/generate-possible-moves.interface';
 import { IMovesHistory } from '../../models/interfaces/moves-history.interface';
 import { FigureTypeEnum } from '../../models/enum/figure-type.enum';
+import { IMove } from '../../models/interfaces/move.interface';
 
 @Injectable({ providedIn: 'root' })
 export class PawnService implements IGeneratePossibleMoves {
@@ -20,7 +21,7 @@ export class PawnService implements IGeneratePossibleMoves {
     constructor() {
     }
 
-    getOneFieldFurtherPosition(): IFieldPosition {
+    getOneFieldFurtherPosition(): IMove {
         const destinationFieldIsEmpty = !this.figures
             .some((f) => f.column === this.currentPosition.column && f.row === this.currentPosition.row + 1 * this.moveFactor);
 
@@ -34,7 +35,7 @@ export class PawnService implements IGeneratePossibleMoves {
         };
     }
 
-    getTwoFieldsFurtherPosition(): IFieldPosition {
+    getTwoFieldsFurtherPosition(): IMove {
         const pawnStartRow = this.currentColor === WhiteBlackEnum.WHITE
             ? GameConstants.WHITE_PAWN_START_ROW
             : GameConstants.BLACK_PAWN_START_ROW;
@@ -60,7 +61,7 @@ export class PawnService implements IGeneratePossibleMoves {
         };
     }
 
-    getOneFieldDiagonallyPosition(factor: 1 | -1): IFieldPosition {
+    getOneFieldDiagonallyPosition(factor: 1 | -1): IMove {
         if (this.currentColor === WhiteBlackEnum.WHITE && this.currentPosition.column - factor < ColumnNames.A) {
             return;
         }
@@ -86,7 +87,7 @@ export class PawnService implements IGeneratePossibleMoves {
         };
     }
 
-    getEnPassantPosition(factor: -1 | 1): IFieldPosition {
+    getEnPassantPosition(factor: -1 | 1): IMove {
         if (this.lastMove.type !== FigureTypeEnum.PAWN
             || Math.abs(this.lastMove.currentRow - this.lastMove.prevRow) !== 2
             || this.lastMove.currentColumn !== this.currentPosition.column - factor * this.moveFactor
@@ -117,11 +118,11 @@ export class PawnService implements IGeneratePossibleMoves {
         return {
             column: this.currentPosition.column - factor * this.moveFactor,
             row: this.currentPosition.row + 1 * this.moveFactor,
-            enPassantMove: true,
+            isEnPassantMove: true,
         };
     }
 
-    generatePossibleMoves(currentFigure: IFigure, figures: IFigure[], moves: IMovesHistory[]): IFieldPosition[] {
+    generatePossibleMoves(currentFigure: IFigure, figures: IFigure[], moves: IMovesHistory[]): IMove[] {
         this.figures = figures;
         this.currentFigure = currentFigure;
         this.currentPosition = { column: currentFigure.column, row: currentFigure.row };
@@ -143,7 +144,7 @@ export class PawnService implements IGeneratePossibleMoves {
             .map((move) => {
                 if (this.currentColor === WhiteBlackEnum.WHITE && move.row === 8
                     || this.currentColor === WhiteBlackEnum.BLACK && move.row === 1) {
-                    return { ...move, pawnPromotionMove: true };
+                    return { ...move, isPawnPromotionMove: true };
                 }
 
                 return move;
