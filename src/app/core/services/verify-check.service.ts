@@ -372,11 +372,7 @@ export class VerifyCheckService {
         return false;
     }
 
-    verifyCheck(kingColumn: ColumnNames, kingRow: number, figures?: IFigure[]): boolean {
-        if (figures) {
-            this.figures = figures;
-        }
-
+    verifyCheck(kingColumn: ColumnNames, kingRow: number): boolean {
         return this.verifyDiagonalToBottomLeftCheck(this.figures, kingColumn, kingRow)
             || this.verifyHorizontalToLeftCheck(this.figures, kingColumn, kingRow)
             || this.verifyHorizontalToRightCheck(this.figures, kingColumn, kingRow)
@@ -462,6 +458,7 @@ export class VerifyCheckService {
             const g = this.verifyDiagonalToBottomLeftCheck(emulatedFigures, kingColumn, kingRow, column, row);
             const h = this.verifyDiagonalToBottomRightCheck(emulatedFigures, kingColumn, kingRow, column, row);
             const i = this.verifyKnightCheck(emulatedFigures, kingColumn, kingRow, column, row);
+
             // console.log(a, b, c, d, e, f, g, h, i);
         });
 

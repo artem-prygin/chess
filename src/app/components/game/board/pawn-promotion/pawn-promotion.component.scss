@@ -1,0 +1,26 @@
+h2 {
+    text-align: center;
+}
+
+.promotion-figures {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.promotion-figure {
+    display: flex;
+    align-items: center;
+
+    img {
+        cursor: pointer;
+        width: 75px;
+        position: relative;
+        bottom: 0;
+        transition: bottom .3s;
+
+        &:hover {
+            bottom: 10px;
+        }
+    }
+}

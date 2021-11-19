@@ -19,7 +19,6 @@ export const initialState: GameState = {
             column: ColumnNames.A,
             row: 2,
             active: true,
-            movesHistory: [],
         },
         {
             id: 2,
@@ -28,7 +27,6 @@ export const initialState: GameState = {
             column: ColumnNames.B,
             row: 2,
             active: true,
-            movesHistory: [],
         },
         {
             id: 3,
@@ -37,7 +35,6 @@ export const initialState: GameState = {
             column: ColumnNames.C,
             row: 2,
             active: true,
-            movesHistory: [],
         },
         {
             id: 4,
@@ -46,7 +43,6 @@ export const initialState: GameState = {
             column: ColumnNames.D,
             row: 2,
             active: true,
-            movesHistory: [],
         },
         {
             id: 5,
@@ -55,7 +51,6 @@ export const initialState: GameState = {
             column: ColumnNames.E,
             row: 2,
             active: true,
-            movesHistory: [],
         },
         {
             id: 6,
@@ -64,7 +59,6 @@ export const initialState: GameState = {
             column: ColumnNames.F,
             row: 2,
             active: true,
-            movesHistory: [],
         },
         {
             id: 7,
@@ -73,7 +67,6 @@ export const initialState: GameState = {
             column: ColumnNames.G,
             row: 2,
             active: true,
-            movesHistory: [],
         },
         {
             id: 8,
@@ -82,7 +75,6 @@ export const initialState: GameState = {
             column: ColumnNames.H,
             row: 2,
             active: true,
-            movesHistory: [],
         },
         {
             id: 9,
@@ -91,7 +83,6 @@ export const initialState: GameState = {
             column: ColumnNames.A,
             row: 1,
             active: true,
-            movesHistory: [],
         },
         {
             id: 10,
@@ -100,7 +91,6 @@ export const initialState: GameState = {
             column: ColumnNames.H,
             row: 1,
             active: true,
-            movesHistory: [],
         },
         {
             id: 11,
@@ -109,7 +99,6 @@ export const initialState: GameState = {
             column: ColumnNames.B,
             row: 1,
             active: true,
-            movesHistory: [],
         },
         {
             id: 12,
@@ -118,7 +107,6 @@ export const initialState: GameState = {
             column: ColumnNames.G,
             row: 1,
             active: true,
-            movesHistory: [],
         },
         {
             id: 13,
@@ -127,7 +115,6 @@ export const initialState: GameState = {
             column: ColumnNames.C,
             row: 1,
             active: true,
-            movesHistory: [],
         },
         {
             id: 14,
@@ -136,7 +123,6 @@ export const initialState: GameState = {
             column: ColumnNames.F,
             row: 1,
             active: true,
-            movesHistory: [],
         },
         {
             id: 15,
@@ -145,7 +131,6 @@ export const initialState: GameState = {
             column: ColumnNames.D,
             row: 1,
             active: true,
-            movesHistory: [],
         },
         {
             id: 16,
@@ -154,7 +139,6 @@ export const initialState: GameState = {
             column: ColumnNames.E,
             row: 1,
             active: true,
-            movesHistory: [],
         },
         {
             id: 17,
@@ -163,7 +147,6 @@ export const initialState: GameState = {
             column: ColumnNames.A,
             row: 7,
             active: true,
-            movesHistory: [],
         },
         {
             id: 18,
@@ -172,7 +155,6 @@ export const initialState: GameState = {
             column: ColumnNames.B,
             row: 7,
             active: true,
-            movesHistory: [],
         },
         {
             id: 19,
@@ -181,7 +163,6 @@ export const initialState: GameState = {
             column: ColumnNames.C,
             row: 7,
             active: true,
-            movesHistory: [],
         },
         {
             id: 20,
@@ -190,7 +171,6 @@ export const initialState: GameState = {
             column: ColumnNames.D,
             row: 7,
             active: true,
-            movesHistory: [],
         },
         {
             id: 21,
@@ -199,7 +179,6 @@ export const initialState: GameState = {
             column: ColumnNames.E,
             row: 7,
             active: true,
-            movesHistory: [],
         },
         {
             id: 22,
@@ -208,7 +187,6 @@ export const initialState: GameState = {
             column: ColumnNames.F,
             row: 7,
             active: true,
-            movesHistory: [],
         },
         {
             id: 23,
@@ -217,7 +195,6 @@ export const initialState: GameState = {
             column: ColumnNames.G,
             row: 7,
             active: true,
-            movesHistory: [],
         },
         {
             id: 24,
@@ -226,7 +203,6 @@ export const initialState: GameState = {
             column: ColumnNames.H,
             row: 7,
             active: true,
-            movesHistory: [],
         },
         {
             id: 25,
@@ -235,7 +211,6 @@ export const initialState: GameState = {
             column: ColumnNames.A,
             row: 8,
             active: true,
-            movesHistory: [],
         },
         {
             id: 26,
@@ -244,7 +219,6 @@ export const initialState: GameState = {
             column: ColumnNames.H,
             row: 8,
             active: true,
-            movesHistory: [],
         },
         {
             id: 27,
@@ -253,7 +227,6 @@ export const initialState: GameState = {
             column: ColumnNames.B,
             row: 8,
             active: true,
-            movesHistory: [],
         },
         {
             id: 28,
@@ -262,7 +235,6 @@ export const initialState: GameState = {
             column: ColumnNames.G,
             row: 8,
             active: true,
-            movesHistory: [],
         },
         {
             id: 29,
@@ -271,7 +243,6 @@ export const initialState: GameState = {
             column: ColumnNames.C,
             row: 8,
             active: true,
-            movesHistory: [],
         },
         {
             id: 30,
@@ -280,7 +251,6 @@ export const initialState: GameState = {
             column: ColumnNames.F,
             row: 8,
             active: true,
-            movesHistory: [],
         },
         {
             id: 31,
@@ -289,7 +259,6 @@ export const initialState: GameState = {
             column: ColumnNames.D,
             row: 8,
             active: true,
-            movesHistory: [],
         },
         {
             id: 32,
@@ -298,7 +267,6 @@ export const initialState: GameState = {
             column: ColumnNames.E,
             row: 8,
             active: true,
-            movesHistory: [],
         },
     ],
     currentTurn: WhiteBlackEnum.WHITE,

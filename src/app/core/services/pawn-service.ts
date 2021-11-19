@@ -88,9 +88,9 @@ export class PawnService implements IGeneratePossibleMoves {
     }
 
     getEnPassantPosition(factor: -1 | 1): IMove {
-        if (this.lastMove.type !== FigureTypeEnum.PAWN
-            || Math.abs(this.lastMove.currentRow - this.lastMove.prevRow) !== 2
-            || this.lastMove.currentColumn !== this.currentPosition.column - factor * this.moveFactor
+        if (this.lastMove?.currentPosition[0].figureType !== FigureTypeEnum.PAWN
+            || Math.abs(this.lastMove.currentPosition[0].row - this.lastMove.prevPosition[0].row) !== 2
+            || this.lastMove.currentPosition[0].column !== this.currentPosition.column - factor * this.moveFactor
         ) {
             return;
         }
@@ -122,13 +122,13 @@ export class PawnService implements IGeneratePossibleMoves {
         };
     }
 
-    generatePossibleMoves(currentFigure: IFigure, figures: IFigure[], moves: IMovesHistory[]): IMove[] {
+    generatePossibleMoves(currentFigure: IFigure, figures: IFigure[], lastMove: IMovesHistory): IMove[] {
         this.figures = figures;
         this.currentFigure = currentFigure;
         this.currentPosition = { column: currentFigure.column, row: currentFigure.row };
         this.currentColor = currentFigure.color;
         this.moveFactor = this.currentColor === WhiteBlackEnum.WHITE ? 1 : -1;
-        this.lastMove = moves.length > 0 && moves[moves.length - 1];
+        this.lastMove = lastMove;
 
         const dirtyPossibleMoves = [
             this.getOneFieldFurtherPosition(),

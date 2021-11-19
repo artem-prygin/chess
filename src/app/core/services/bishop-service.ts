@@ -3,7 +3,6 @@ import { IFieldPosition } from '../../models/interfaces/field-position.interface
 import { WhiteBlackEnum } from '../../models/enum/white-black.enum';
 import { Injectable } from '@angular/core';
 import { IGeneratePossibleMoves } from '../../models/interfaces/generate-possible-moves.interface';
-import { IMovesHistory } from '../../models/interfaces/moves-history.interface';
 import { GameConstants } from '../../models/constants/game-constants';
 import { IMove } from '../../models/interfaces/move.interface';
 
@@ -13,7 +12,6 @@ export class BishopService implements IGeneratePossibleMoves {
     currentFigure: IFigure;
     currentPosition: IFieldPosition;
     currentColor: WhiteBlackEnum;
-    lastMove: IMovesHistory;
 
     constructor() {
     }

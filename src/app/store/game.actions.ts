@@ -20,7 +20,7 @@ export const makeEnPassantMove = createAction(
 
 export const makePawnPromotionMove = createAction(
     'Make Pawn Promotion Move',
-    props<{ pawn: IFigure; move: IMove, promotedType: FigureTypeEnum }>(),
+    props<{ pawn: IFigure; move: IMove, pawnPromotedType: FigureTypeEnum }>(),
 );
 
 export const resetGame = createAction(

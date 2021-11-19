@@ -1,8 +1,8 @@
 import { Component, Inject } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
-import { FigureTypeEnum } from '../../../models/enum/figure-type.enum';
-import { GameConstants } from '../../../models/constants/game-constants';
-import { WhiteBlackEnum } from '../../../models/enum/white-black.enum';
+import { FigureTypeEnum } from '../../../../models/enum/figure-type.enum';
+import { GameConstants } from '../../../../models/constants/game-constants';
+import { WhiteBlackEnum } from '../../../../models/enum/white-black.enum';
 
 
 @Component({

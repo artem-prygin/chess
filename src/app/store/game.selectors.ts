@@ -30,3 +30,8 @@ export const selectMoves = createSelector(
     getGameState,
     ({ moves }) => moves,
 );
+
+export const selectLastMove = createSelector(
+    getGameState,
+    ({ moves }) => moves && moves[moves.length - 1],
+);

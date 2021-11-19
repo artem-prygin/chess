@@ -15,7 +15,14 @@
 </div>
 
 <div class="reset-buttons">
-    <button (click)="resetGame()">Reset Game</button>
-    <button (click)="undoMove()">Undo move</button>
+    <button mat-raised-button
+            color="warn"
+            (click)="resetGame(true)">Reset Game
+    </button>
+    <button mat-raised-button
+            [disabled]="!lastMove"
+            color="accent"
+            (click)="undoMove()">Undo move
+    </button>
 </div>
 

@@ -9,6 +9,7 @@ import { ColumnNames } from '../../models/enum/column-names.enum';
 import { CastlingMoveTypeEnum } from '../../models/enum/castling-move-type.enum';
 import { VerifyCheckService } from './verify-check.service';
 import { IMove } from '../../models/interfaces/move.interface';
+import { IMovesHistory } from '../../models/interfaces/moves-history.interface';
 
 
 @Injectable({ providedIn: 'root' })
@@ -60,7 +61,7 @@ export class KingService implements IGeneratePossibleMoves {
 
         const rook: IFigure = this.figures
             .find((f) => f.type === FigureTypeEnum.ROOK
-                && f.movesHistory.length === 0
+                && !f.movesCount
                 && f.column === ColumnNames.H,
             );
 
@@ -88,7 +89,7 @@ export class KingService implements IGeneratePossibleMoves {
 
         const rook: IFigure = this.figures
             .find((f) => f.type === FigureTypeEnum.ROOK
-                && f.movesHistory.length === 0
+                && !f.movesCount
                 && f.color === this.currentColor
                 && f.column === ColumnNames.A,
             );
@@ -104,7 +105,7 @@ export class KingService implements IGeneratePossibleMoves {
         };
     }
 
-    generatePossibleMoves(currentFigure: IFigure, figures: IFigure[]): IMove[] {
+    generatePossibleMoves(currentFigure: IFigure, figures: IFigure[], lastMove: IMovesHistory): IMove[] {
         this.figures = figures;
         this.currentFigure = currentFigure;
         this.currentPosition = { column: currentFigure.column, row: currentFigure.row };
@@ -121,8 +122,7 @@ export class KingService implements IGeneratePossibleMoves {
             this.getNewPosition(-1, 0),
         ];
 
-        if (this.verifyCheckService.verifyCheck(this.currentPosition.column, this.currentPosition.row, this.figures)
-            && this.currentFigure.movesHistory.length > 0) {
+        if (!lastMove?.isCheck && !this.currentFigure.movesCount) {
             dirtyPossibleMoves.push(
                 this.getShortCastlingMove(),
                 this.getLongCastlingMove(),

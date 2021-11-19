@@ -1,5 +1,6 @@
-<ul *ngIf="moves.length > 0">
-    <li *ngFor="let move of moves; index as i">
-        {{ i % 2 === 0 ? i / 2 + 1 + '. ' : '' }}{{ move | printMove }}
-    </li>
-</ul>
+<div class="moves-grid">
+    <div class="move"
+         *ngFor="let move of moves; index as i">
+<!--        {{ i % 2 === 0 ? (i / 2 + 1) + '. ' : '' }}{{ move | printMove }}-->
+    </div>
+</div>

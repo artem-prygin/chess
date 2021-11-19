@@ -1,4 +1,16 @@
 :host {
-    width: 300px;
+    width: 200px;
     margin-right: 50px;
+    padding-left: 50px;
+}
+
+.moves-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    width: max-content;
+}
+
+.move {
+    padding: 0 15px;
+    width: max-content;
 }

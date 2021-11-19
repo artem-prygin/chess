@@ -3,7 +3,6 @@ import { Store } from '@ngrx/store';
 import * as gameActions from '../../../store/game.actions';
 import * as gameSelectors from '../../../store/game.selectors';
 import { GameConstants } from '../../../models/constants/game-constants';
-import { distinctUntilChanged } from 'rxjs/operators';
 import { IFigure } from '../../../models/interfaces/figure.interface';
 import { FigureTypeEnum } from '../../../models/enum/figure-type.enum';
 import { WhiteBlackEnum } from '../../../models/enum/white-black.enum';
@@ -18,9 +17,11 @@ import { KnightService } from '../../../core/services/knight-service';
 import { KingService } from '../../../core/services/king-service';
 import { VerifyCheckService } from '../../../core/services/verify-check.service';
 import { MatDialog } from '@angular/material/dialog';
-import { PawnPromotionComponent } from '../pawn-promotion/pawn-promotion.component';
+import { PawnPromotionComponent } from './pawn-promotion/pawn-promotion.component';
 import { IMove } from '../../../models/interfaces/move.interface';
 import { FigureImageUtil } from '../../../core/utils/figure-image.util';
+import { DialogMessageComponent } from '../../shared/dialog-message/dialog-message.component';
+import { ButtonActionEnum } from '../../../models/enum/button-action.enum';
 
 @Component({
     selector: 'app-board',
@@ -38,7 +39,7 @@ export class BoardComponent implements OnInit, OnDestroy {
     filteredMoves: IMove[] = [];
     ROWS = GameConstants.ROWS;
     COLUMNS = GameConstants.COLUMNS;
-    moves: IMovesHistory[] = [];
+    lastMove: IMovesHistory;
     gameStarted: boolean;
 
     constructor(
@@ -56,44 +57,62 @@ export class BoardComponent implements OnInit, OnDestroy {
 
     ngOnInit(): void {
         this.sub$.add(
-            this.store.select(gameSelectors.selectActiveFigures).pipe(
-                distinctUntilChanged((a, b) => JSON.stringify(a) === JSON.stringify(b)),
-            ).subscribe((figures) => {
-                this.figures = figures;
-            }),
+            this.store.select(gameSelectors.selectActiveFigures)
+                .subscribe((figures) => {
+                    this.figures = figures;
+                }),
         );
 
         this.sub$.add(
-            this.store.select(gameSelectors.selectMoves).pipe(
-                distinctUntilChanged((a, b) => JSON.stringify(a) === JSON.stringify(b)),
-            ).subscribe((moves) => {
-                this.moves = moves;
-            }),
+            this.store.select(gameSelectors.selectLastMove)
+                .subscribe((lastMove) => {
+                    this.lastMove = lastMove;
+                }),
         );
 
         this.sub$.add(
-            this.store.select(gameSelectors.selectCurrentTurn).pipe(
-                distinctUntilChanged((a, b) => a === b),
-            ).subscribe((currentTurn) => {
-                console.log('switch turn');
-                this.currentTurnColor = currentTurn;
+            this.store.select(gameSelectors.selectCurrentTurn)
+                .subscribe(async (currentTurn) => {
+                    if (!this.gameStarted || !this.lastMove) {
+                        this.currentTurnColor = currentTurn;
+                        this.gameStarted = true;
+                        return;
+                    }
 
-                if (!this.gameStarted) {
-                    this.gameStarted = true;
-                    return;
-                }
+                    const isMate = this.lastMove.isMate;
 
-                const isCheck = this.moves.length > 0 && this.moves[this.moves.length - 1].isCheck;
-                const isMate = this.moves.length > 0 && this.moves[this.moves.length - 1].isMate;
+                    if (isMate) {
+                        console.log('mate');
+                        const dialogRef = this.dialog.open(DialogMessageComponent);
+                        dialogRef.componentInstance.title = 'Checkmate!';
+                        dialogRef.componentInstance.message = `${WhiteBlackEnum.getStringValue(this.currentTurnColor).toUpperCase()} WIN`;
+                        dialogRef.componentInstance.buttons = [
+                            { color: 'warn', text: 'Reset game', action: ButtonActionEnum.RESET_GAME },
+                        ];
+                        const resAction = await dialogRef.afterClosed().toPromise();
+                        if (resAction === ButtonActionEnum.RESET_GAME) {
+                            await this.resetGame();
+                        }
+                        this.currentTurnColor = WhiteBlackEnum.WHITE;
+                        return;
+                    }
 
-                if (isCheck) {
-                    console.log('check');
-                }
+                    const isStaleMate = this.lastMove.isStaleMate;
+                    if (isStaleMate) {
+                        console.log('stalemate');
+                        const dialogRef = this.dialog.open(DialogMessageComponent);
+                        dialogRef.componentInstance.title = 'Stalemate!';
+                        dialogRef.componentInstance.message = 'Stalemate!';
+                        return;
+                    }
 
-                if (isMate) {
-                    console.log('mate');
-                }
-            }),
+                    const isCheck = this.lastMove.isCheck;
+                    if (isCheck) {
+                        console.log('check');
+                    }
+
+                    this.currentTurnColor = currentTurn;
+                }),
         );
     }
 
@@ -129,25 +148,25 @@ export class BoardComponent implements OnInit, OnDestroy {
         }
 
         this.activeFigure = figure;
-        this.dirtyPossibleMoves = this.generatePossibleMoves(figure);
+        this.dirtyPossibleMoves = this.generateDirtyPossibleMoves(figure, this.figures);
         this.filteredMoves = this.verifyCheckService
             .generateFilteredMoves(this.figures, this.dirtyPossibleMoves, this.currentTurnColor, this.activeFigure);
     }
 
-    generatePossibleMoves(figure: IFigure): IMove[] {
+    generateDirtyPossibleMoves(figure: IFigure, figures: IFigure[]): IMove[] {
         switch (figure.type) {
             case FigureTypeEnum.PAWN:
-                return this.pawnService.generatePossibleMoves(figure, this.figures, this.moves);
+                return this.pawnService.generatePossibleMoves(figure, figures, this.lastMove);
             case FigureTypeEnum.ROOK:
-                return this.rookService.generatePossibleMoves(figure, this.figures);
+                return this.rookService.generatePossibleMoves(figure, figures);
             case FigureTypeEnum.BISHOP:
-                return this.bishopService.generatePossibleMoves(figure, this.figures);
+                return this.bishopService.generatePossibleMoves(figure, figures);
             case FigureTypeEnum.QUEEN:
-                return this.queenService.generatePossibleMoves(figure, this.figures);
+                return this.queenService.generatePossibleMoves(figure, figures);
             case FigureTypeEnum.KNIGHT:
-                return this.knightService.generatePossibleMoves(figure, this.figures);
+                return this.knightService.generatePossibleMoves(figure, figures);
             case FigureTypeEnum.KING:
-                return this.kingService.generatePossibleMoves(figure, this.figures);
+                return this.kingService.generatePossibleMoves(figure, figures, this.lastMove);
             default:
                 return [];
         }
@@ -163,6 +182,44 @@ export class BoardComponent implements OnInit, OnDestroy {
             .find((move) => move.column === column && move.row === row);
     }
 
+    addMoveCheckMateInfo(move: IMove, promotedType?: FigureTypeEnum): void {
+        const emulatedFigures = this.figures.map((figure) => {
+            if (this.activeFigure.id === figure.id) {
+                return {
+                    ...figure,
+                    column: move.column,
+                    row: move.row,
+                    type: promotedType || figure.type,
+                };
+            }
+
+            if (figure.column === move.column && figure.row === move.row && this.activeFigure.id !== figure.id) {
+                return {
+                    ...figure,
+                    active: false,
+                };
+            }
+
+            return figure;
+        }).filter(({ active }) => active);
+
+        const oppositeColor = this.currentTurnColor === WhiteBlackEnum.WHITE
+            ? WhiteBlackEnum.BLACK
+            : WhiteBlackEnum.WHITE;
+
+        move.isCheck = this.verifyCheckService.verifyCheckAllMoves(emulatedFigures, oppositeColor);
+        const hasAvailableMoves = emulatedFigures
+            .filter(({ color }) => color === oppositeColor)
+            .some((figure) => {
+                const dirtyMoves = this.generateDirtyPossibleMoves(figure, emulatedFigures);
+                const moves = this.verifyCheckService
+                    .generateFilteredMoves(emulatedFigures, dirtyMoves, oppositeColor, figure);
+                return moves.length > 0;
+            });
+        move.isStaleMate = !move.isCheck && !hasAvailableMoves;
+        move.isMate = move.isCheck && !hasAvailableMoves;
+    }
+
     async moveFigure(column: number, row: number): Promise<void> {
         const move = this.getMove(column, row);
         if (!move) {
@@ -170,44 +227,27 @@ export class BoardComponent implements OnInit, OnDestroy {
             return;
         }
 
-        const emulatedFigures = this.figures.map((figure) => {
-            if (this.activeFigure.id === figure.id) {
-                return {
-                    ...figure,
-                    column: move.column,
-                    row: move.row,
-                };
-            }
-            return figure;
-        });
-
-        const oppositeColor = this.currentTurnColor === WhiteBlackEnum.WHITE
-            ? WhiteBlackEnum.BLACK
-            : WhiteBlackEnum.WHITE;
-
-        move.isMate = !emulatedFigures
-            .filter(({ color }) => color === oppositeColor)
-            .some((figure) => {
-                const dirtyMoves = this.generatePossibleMoves(figure);
-                const moves = this.verifyCheckService
-                    .generateFilteredMoves(emulatedFigures, dirtyMoves, oppositeColor, figure);
-                console.log(dirtyMoves, moves);
-                return moves.length > 0;
-            });
-        move.isCheck = move.isMate || this.verifyCheckService.verifyCheckAllMoves(emulatedFigures, oppositeColor);
-
         if (move.isPawnPromotionMove) {
             const dialog = this.dialog.open(PawnPromotionComponent, {
                 disableClose: true,
                 data: { currentColor: this.currentTurnColor },
             });
-            const promotedType: FigureTypeEnum = await dialog.afterClosed().toPromise();
+            const pawnPromotedType: FigureTypeEnum = await dialog.afterClosed().toPromise();
 
-            if (!promotedType) {
+            if (!pawnPromotedType) {
                 return;
             }
 
-            this.store.dispatch(gameActions.makePawnPromotionMove({ pawn: this.activeFigure, move, promotedType }));
+            this.addMoveCheckMateInfo(move, pawnPromotedType);
+            this.store.dispatch(gameActions.makePawnPromotionMove({ pawn: this.activeFigure, move, pawnPromotedType }));
+            this.resetActiveData();
+            return;
+        }
+
+        this.addMoveCheckMateInfo(move);
+
+        if (move.isEnPassantMove) {
+            this.store.dispatch(gameActions.makeEnPassantMove({ pawn: this.activeFigure, move }));
             this.resetActiveData();
             return;
         }
@@ -232,9 +272,25 @@ export class BoardComponent implements OnInit, OnDestroy {
         this.dirtyPossibleMoves = [];
     }
 
-    resetGame(): void {
+    async resetGame(confirm = false): Promise<void> {
+        if (confirm) {
+            const dialogRef = this.dialog.open(DialogMessageComponent);
+            dialogRef.componentInstance.title = 'Are you sure you want to reset game?';
+            dialogRef.componentInstance.buttons = [
+                { color: 'warn', text: 'Reset game', action: ButtonActionEnum.RESET_GAME },
+            ];
+            const resAction = await dialogRef.afterClosed().toPromise();
+            if (resAction === ButtonActionEnum.RESET_GAME) {
+                this.store.dispatch(gameActions.resetGame());
+                this.resetActiveData();
+                this.gameStarted = false;
+            }
+            return;
+        }
+
         this.store.dispatch(gameActions.resetGame());
         this.resetActiveData();
+        this.gameStarted = false;
     }
 
     undoMove(): void {

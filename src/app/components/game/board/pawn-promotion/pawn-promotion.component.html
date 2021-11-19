@@ -1,5 +1,8 @@
-<div class="">
-    <div *ngFor="let figure of promotionFiguresNames; index as i"
+<h3>Choose promotion figure</h3>
+
+<div class="promotion-figures">
+    <div class="promotion-figure"
+         *ngFor="let figure of promotionFiguresNames; index as i"
          (click)="chooseFigure(promotionFiguresTypes[i])">
         <img src="{{ GameConstants.FIGURE_IMAGE_LINK + currentColor + '-' + figure + GameConstants.FIGURE_IMAGE_EXTENSION}}">
     </div>

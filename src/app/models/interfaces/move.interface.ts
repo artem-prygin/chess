@@ -9,4 +9,5 @@ export interface IMove {
     castlingMoveType?: CastlingMoveTypeEnum;
     isCheck?: boolean;
     isMate?: boolean;
+    isStaleMate?: boolean;
 }
