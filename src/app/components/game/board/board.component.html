@@ -1,6 +1,6 @@
 <div class="board">
-    <ng-container *ngFor="let row of ROWS">
-        <ng-container *ngFor="let column of COLUMNS">
+    <ng-container *ngFor="let row of ROWS; first as firstRow; last as lastRow">
+        <ng-container *ngFor="let column of COLUMNS; first as firstColumn; last as lastColumn">
             <div class="field"
                  (click)="activeFigure ? moveFigure(column, row) : setActiveFigure(column, row)"
                  [ngStyle]="{'background-image': getFigureImage(column, row)}"
@@ -9,6 +9,18 @@
                  [class.possible-move]="isPossibleMove(column, row)"
                  [class.field-white]="(column % 2 !== 0 && row % 2 !== 0) || (column % 2 === 0 && row % 2 === 0)"
                  [class.field-black]="(column % 2 !== 0 && row % 2 === 0) || (column % 2 === 0 && row % 2 !== 0)">
+                <div *ngIf="firstRow || lastRow"
+                     class="column-label"
+                     [class.column-label__top]="firstRow"
+                     [class.column-label__bottom]="lastRow">
+                    {{ ColumnNames.getLetter(column).toUpperCase() }}
+                </div>
+                <div *ngIf="firstColumn || lastColumn"
+                     class="row-label"
+                     [class.row-label__left]="firstColumn"
+                     [class.row-label__right]="lastColumn">
+                    {{ row }}
+                </div>
             </div>
         </ng-container>
     </ng-container>

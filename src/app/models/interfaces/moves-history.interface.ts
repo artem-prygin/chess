@@ -6,6 +6,7 @@ export interface IMovesHistory {
     prevPosition: IFieldPosition[];
     currentPosition: IFieldPosition[];
     castlingMoveType?: CastlingMoveTypeEnum;
+    isEatenFigureMove?: boolean;
     isPawnPromotionMove?: boolean;
     isEnPassantMove?: boolean;
     isCheck?: boolean;

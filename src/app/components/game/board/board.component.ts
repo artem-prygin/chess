@@ -22,6 +22,7 @@ import { IMove } from '../../../models/interfaces/move.interface';
 import { FigureImageUtil } from '../../../core/utils/figure-image.util';
 import { DialogMessageComponent } from '../../shared/dialog-message/dialog-message.component';
 import { ButtonActionEnum } from '../../../models/enum/button-action.enum';
+import { ColumnNames } from 'src/app/models/enum/column-names.enum';
 
 @Component({
     selector: 'app-board',
@@ -39,8 +40,10 @@ export class BoardComponent implements OnInit, OnDestroy {
     filteredMoves: IMove[] = [];
     ROWS = GameConstants.ROWS;
     COLUMNS = GameConstants.COLUMNS;
+    ColumnNames = ColumnNames;
     lastMove: IMovesHistory;
     gameStarted: boolean;
+    autoplay: number;
 
     constructor(
         private store: Store,
@@ -57,9 +60,34 @@ export class BoardComponent implements OnInit, OnDestroy {
 
     ngOnInit(): void {
         this.sub$.add(
-            this.store.select(gameSelectors.selectActiveFigures)
-                .subscribe((figures) => {
-                    this.figures = figures;
+            this.store.select(gameSelectors.selectMoves)
+                .subscribe(async (moves) => {
+                    if (moves.length < 6) {
+                        return;
+                    }
+
+                    const firstColorMovesRepeated = JSON.stringify(moves[moves.length - 5].prevPosition)
+                            === JSON.stringify(moves[moves.length - 3].currentPosition)
+                        && JSON.stringify(moves[moves.length - 5].currentPosition)
+                            === JSON.stringify(moves[moves.length - 1].currentPosition);
+
+                    const secondColorMovesRepeated = JSON.stringify(moves[moves.length - 6].prevPosition)
+                            === JSON.stringify(moves[moves.length - 4].currentPosition)
+                        && JSON.stringify(moves[moves.length - 6].currentPosition)
+                            === JSON.stringify(moves[moves.length - 2].currentPosition);
+
+                    if (firstColorMovesRepeated && secondColorMovesRepeated) {
+                        const dialogRef = this.dialog.open(DialogMessageComponent);
+                        dialogRef.componentInstance.title = 'Draw by repeating moves!';
+                        dialogRef.componentInstance.buttons = [
+                            { color: 'warn', text: 'Reset game', action: ButtonActionEnum.RESET_GAME },
+                        ];
+                        const resAction = await dialogRef.afterClosed().toPromise();
+                        if (resAction === ButtonActionEnum.RESET_GAME) {
+                            await this.resetGame();
+                        }
+                        this.currentTurnColor = WhiteBlackEnum.WHITE;
+                    }
                 }),
         );
 
@@ -112,6 +140,40 @@ export class BoardComponent implements OnInit, OnDestroy {
                     }
 
                     this.currentTurnColor = currentTurn;
+                }),
+        );
+
+        this.sub$.add(
+            this.store.select(gameSelectors.selectActiveFigures)
+                .subscribe((figures) => {
+                    this.figures = figures;
+
+                    const currentFigures = figures.filter((f) => f.color === this.currentTurnColor);
+                    const availableFigures = [];
+                    currentFigures.forEach((f) => {
+                        const dirty = this.generateDirtyPossibleMoves(f, figures);
+                        const filtered = this.verifyCheckService
+                            .generateFilteredMoves(figures, dirty, this.currentTurnColor, f);
+                        if (filtered.length > 0) {
+                            availableFigures.push([f, filtered]);
+                        }
+                    });
+
+                    const availableVars = availableFigures.length;
+                    const random = Math.floor(Math.random() * availableVars);
+                    const randomData = availableFigures[random];
+                    console.log(randomData, random);
+
+                    const movesCount = randomData[1].length;
+                    const randomCount = Math.floor(Math.random() * movesCount);
+                    const randomMove = randomData[1][randomCount];
+                    console.log(randomMove, randomCount);
+
+                    this.autoplay = setTimeout(() => {
+                        // this.activeFigure = randomData[0];
+                        // this.filteredMoves = [randomMove];
+                        // this.moveFigure(randomMove.column, randomMove.row);
+                    }, 1000);
                 }),
         );
     }
@@ -222,6 +284,7 @@ export class BoardComponent implements OnInit, OnDestroy {
 
     async moveFigure(column: number, row: number): Promise<void> {
         const move = this.getMove(column, row);
+        console.log(this.filteredMoves, move);
         if (!move) {
             this.setActiveFigure(column, row);
             return;
@@ -262,10 +325,6 @@ export class BoardComponent implements OnInit, OnDestroy {
         this.resetActiveData();
     }
 
-    ngOnDestroy(): void {
-        this.sub$.unsubscribe();
-    }
-
     resetActiveData(): void {
         this.activeFigure = null;
         this.filteredMoves = [];
@@ -283,6 +342,7 @@ export class BoardComponent implements OnInit, OnDestroy {
             if (resAction === ButtonActionEnum.RESET_GAME) {
                 this.store.dispatch(gameActions.resetGame());
                 this.resetActiveData();
+                clearTimeout(this.autoplay);
                 this.gameStarted = false;
             }
             return;
@@ -290,11 +350,16 @@ export class BoardComponent implements OnInit, OnDestroy {
 
         this.store.dispatch(gameActions.resetGame());
         this.resetActiveData();
+        clearTimeout(this.autoplay);
         this.gameStarted = false;
     }
 
     undoMove(): void {
         this.store.dispatch(gameActions.undoMove());
         this.resetActiveData();
+    }
+
+    ngOnDestroy(): void {
+        this.sub$.unsubscribe();
     }
 }

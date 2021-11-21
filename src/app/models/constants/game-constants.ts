@@ -1,7 +1,4 @@
 export class GameConstants {
-    static MIN_ROW_COLUMN = 1;
-    static MAX_ROW_COLUMN = 8;
-    static FIELDS_COUNT = 64;
     static COLUMNS_COUNT = 8;
     static ROWS_COUNT = 8;
     static ROWS = [8, 7, 6, 5, 4, 3, 2, 1];

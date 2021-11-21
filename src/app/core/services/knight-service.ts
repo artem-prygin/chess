@@ -4,6 +4,7 @@ import { WhiteBlackEnum } from '../../models/enum/white-black.enum';
 import { Injectable } from '@angular/core';
 import { IGeneratePossibleMoves } from '../../models/interfaces/generate-possible-moves.interface';
 import { IMove } from '../../models/interfaces/move.interface';
+import { ColumnNames } from '../../models/enum/column-names.enum';
 
 
 @Injectable({ providedIn: 'root' })
@@ -17,12 +18,21 @@ export class KnightService implements IGeneratePossibleMoves {
     }
 
     getNewPosition(columnDiff: number, rowDiff: number): IMove {
-        const destinationFieldIsAvailable = !this.figures
+        const destinationFieldExists = this.currentPosition.column + columnDiff > 0
+            && this.currentPosition.column + columnDiff <= ColumnNames.H
+            && this.currentPosition.row + rowDiff > 0
+            && this.currentPosition.row + rowDiff <= 8;
+
+        if (!destinationFieldExists) {
+            return;
+        }
+
+        const destinationFieldIsEmpty = !this.figures
             .some((f) => f.column === this.currentPosition.column + columnDiff
                 && f.row === this.currentPosition.row + rowDiff
                 && f.color === this.currentColor);
 
-        if (!destinationFieldIsAvailable) {
+        if (!destinationFieldIsEmpty) {
             return;
         }
 

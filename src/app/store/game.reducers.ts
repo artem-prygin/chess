@@ -35,7 +35,7 @@ export const GameReducer = createReducer(
                     ...f,
                     column: currentColumn,
                     row: currentRow,
-                    movesCount: f.movesCount > 0 ? f.movesCount + 1 : 1
+                    movesCount: f.movesCount > 0 ? f.movesCount + 1 : 1,
                 };
             }
 
@@ -47,7 +47,12 @@ export const GameReducer = createReducer(
             ? state.moves[state.moves.length - 1].moveNumber + 1
             : 1;
         const prevPosition: IFieldPosition[] = [{ figureID: id, column: prevColumn, row: prevRow, figureType: type }];
-        const currentPosition: IFieldPosition[] = [{ figureID: id, column: currentColumn, row: currentRow, figureType: type }];
+        const currentPosition: IFieldPosition[] = [{
+            figureID: id,
+            column: currentColumn,
+            row: currentRow,
+            figureType: type,
+        }];
         if (eatenFigure) {
             prevPosition.push({ figureID: eatenFigure.id, column: currentColumn, row: currentRow });
             currentPosition.push({ figureID: eatenFigure.id, column: null, row: null });
@@ -59,6 +64,7 @@ export const GameReducer = createReducer(
             isCheck,
             isMate,
             isStaleMate,
+            isEatenFigureMove: !!eatenFigure,
         };
         const moves: IMovesHistory[] = [...state.moves, newMove];
         const gameInfo = { currentTurn, moves, figures };
@@ -66,7 +72,7 @@ export const GameReducer = createReducer(
         return gameInfo;
     }),
     on(gameActions.makePawnPromotionMove, (state, { pawn, move, pawnPromotedType }) => {
-        const { id, column: prevColumn, row: prevRow } = pawn;
+        const { id, type, column: prevColumn, row: prevRow } = pawn;
         const { column: currentColumn, row: currentRow, isCheck, isMate, isStaleMate } = move;
 
         const eatenFigure: IFigure = [...state.figures]
@@ -92,15 +98,20 @@ export const GameReducer = createReducer(
                     type: pawnPromotedType,
                     column: currentColumn,
                     row: currentRow,
-                    movesCount: f.movesCount > 0 ? f.movesCount + 1 : 1
+                    movesCount: f.movesCount > 0 ? f.movesCount + 1 : 1,
                 };
             }
         });
 
         const currentTurn: WhiteBlackEnum = switchTurn(state.currentTurn);
         const moveNumber: number = state.moves[state.moves.length - 1].moveNumber + 1;
-        const prevPosition: IFieldPosition[] = [{ figureID: id, column: prevColumn, row: prevRow }];
-        const currentPosition: IFieldPosition[] = [{ figureID: id, column: currentColumn, row: currentRow }];
+        const prevPosition: IFieldPosition[] = [{ figureID: id, column: prevColumn, row: prevRow, figureType: type }];
+        const currentPosition: IFieldPosition[] = [{
+            figureID: id,
+            column: currentColumn,
+            row: currentRow,
+            figureType: pawnPromotedType,
+        }];
         if (eatenFigure) {
             prevPosition.push({ figureID: eatenFigure.id, column: currentColumn, row: currentRow });
             currentPosition.push({ figureID: eatenFigure.id, column: null, row: null });
@@ -113,6 +124,7 @@ export const GameReducer = createReducer(
             isMate,
             isStaleMate,
             isPawnPromotionMove: true,
+            isEatenFigureMove: !!eatenFigure,
         };
 
         const moves: IMovesHistory[] = [...state.moves, newMove];
@@ -146,7 +158,7 @@ export const GameReducer = createReducer(
                     ...f,
                     column: currentColumn,
                     row: currentRow,
-                    movesCount: f.movesCount > 0 ? f.movesCount + 1 : 1
+                    movesCount: f.movesCount > 0 ? f.movesCount + 1 : 1,
                 };
             }
         });
@@ -154,11 +166,11 @@ export const GameReducer = createReducer(
         const currentTurn: WhiteBlackEnum = switchTurn(state.currentTurn);
         const moveNumber: number = state.moves[state.moves.length - 1].moveNumber + 1;
         const prevPosition: IFieldPosition[] = [
-            { figureID: id, column: prevColumn, row: prevRow },
+            { figureID: id, column: prevColumn, row: prevRow, figureType: FigureTypeEnum.PAWN },
             { figureID: eatenPawn.id, column: eatenPawn.column, row: eatenPawn.row },
         ];
         const currentPosition: IFieldPosition[] = [
-            { figureID: id, column: currentColumn, row: currentRow },
+            { figureID: id, column: currentColumn, row: currentRow, figureType: FigureTypeEnum.PAWN },
             { figureID: eatenPawn.id, column: null, row: null },
         ];
         const newMove: IMovesHistory = {
@@ -169,6 +181,7 @@ export const GameReducer = createReducer(
             isMate,
             isStaleMate,
             isEnPassantMove: true,
+            isEatenFigureMove: true,
         };
         const moves: IMovesHistory[] = [...state.moves, newMove];
         const gameInfo = { currentTurn, moves, figures };
@@ -198,7 +211,7 @@ export const GameReducer = createReducer(
                     ...f,
                     column: currentColumn,
                     row: currentRow,
-                    movesCount: f.movesCount > 0 ? f.movesCount + 1 : 1
+                    movesCount: f.movesCount > 0 ? f.movesCount + 1 : 1,
                 };
             }
 
@@ -209,7 +222,7 @@ export const GameReducer = createReducer(
                         ? rook.column - 2
                         : rook.column + 3,
                     row: rook.row,
-                    movesCount: f.movesCount > 0 ? f.movesCount + 1 : 1
+                    movesCount: f.movesCount > 0 ? f.movesCount + 1 : 1,
                 };
             }
         });
@@ -217,15 +230,16 @@ export const GameReducer = createReducer(
         const currentTurn: WhiteBlackEnum = switchTurn(state.currentTurn);
         const moveNumber: number = state.moves[state.moves.length - 1].moveNumber + 1;
         const prevPosition: IFieldPosition[] = [
-            { figureID: id, column: prevColumn, row: prevRow },
-            { figureID: rook.id, column: rook.column, row: rook.row },
+            { figureID: id, column: prevColumn, row: prevRow, figureType: FigureTypeEnum.KING },
+            { figureID: rook.id, column: rook.column, row: rook.row, figureType: FigureTypeEnum.ROOK },
         ];
         const currentPosition: IFieldPosition[] = [
-            { figureID: id, column: currentColumn, row: currentRow },
+            { figureID: id, column: currentColumn, row: currentRow, figureType: FigureTypeEnum.KING },
             {
                 figureID: rook.id,
                 column: figures.find((f) => f.id === rook.id).column,
                 row: rook.row,
+                figureType: FigureTypeEnum.ROOK,
             },
         ];
         const newMove: IMovesHistory = {
